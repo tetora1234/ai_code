@@ -9,8 +9,4 @@ REM コミットを実行
 git commit -m "%commitMsg%"
 
 REM プッシュを実行
-git push
-
-echo.
-echo Git push completed!
-pause
+git push origin master
