@@ -6,8 +6,8 @@ import os
 import gc
 import re
 
-MODEL_PATH = r"C:\Users\Owner\Desktop\git\llm\wisper\models\wisper_v3\checkpoint-1567"
-INPUT_DIR = r"E:\RJ01107625"
+MODEL_PATH = r"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper\checkpoint-4456"
+INPUT_DIR = r"C:\Users\user\Desktop\asmr"
 OUTPUT_DIR = os.path.join(INPUT_DIR, "transcriptions")
 
 # OUTPUT_DIRが存在しない場合は作成
