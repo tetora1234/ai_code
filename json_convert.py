@@ -55,8 +55,8 @@ def write_csv(data, output_file):
     print(f"CSVファイルが作成されました: {output_file}")
 
 # メイン処理
-directory = r"C:\Users\user\Downloads"  # 指定されたWindowsの絶対パス
-output_file = os.path.join(directory, 'output.csv')
+directory = r"C:\Users\user\Desktop\git\ai_code\dataset\whisper\audio"  # 指定されたWindowsの絶対パス
+output_file = os.path.join(directory, 'data.csv')
 
 print("処理を開始します...")
 csv_data = process_json_files(directory)

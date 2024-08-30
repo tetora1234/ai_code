@@ -20,12 +20,12 @@ from transformers import (
 
 # 定数と設定
 CSV_PATH = r"C:\Users\user\Desktop\git\ai_code\dataset\whisper\audio\data.csv"
-MODEL_CONFIG = r"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper\checkpoint-4456"
+MODEL_CONFIG = r"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper3\checkpoint-8912"
 LANGUAGE = "Japanese"
 TASK = "transcribe"
-OUTPUT_DIR = r"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper2"
+OUTPUT_DIR = r"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper"
 SAMPLING_RATE = 16000
-SAMPLE_FRAC = 0.15  # サンプリングする割合
+SAMPLE_FRAC = 0.045  # サンプリングする割合
 
 def load_and_prepare_data(csv_path: str, sample_frac: float) -> Dataset:
     try:
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     
     training_args = Seq2SeqTrainingArguments(
         output_dir=OUTPUT_DIR,
-        per_device_train_batch_size=4,
+        per_device_train_batch_size=12,
         gradient_accumulation_steps=8,
         learning_rate=1e-5,
         num_train_epochs=10,
