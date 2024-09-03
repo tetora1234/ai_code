@@ -6,7 +6,7 @@ import os
 import gc
 import re
 
-MODEL_PATH = r"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper\checkpoint-1567"
+MODEL_PATH = r"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper\checkpoint-940"
 INPUT_DIR = r"C:\Users\user\Desktop\asmr"
 OUTPUT_DIR = os.path.join(INPUT_DIR, "transcriptions")
 
@@ -29,7 +29,6 @@ def split_on_silence(audio, max_chunk_duration=30, initial_min_silence_len=1000,
     silence_thresh = initial_silence_thresh
     
     while True:
-        # 無音区間を検出
         non_silent_intervals = librosa.effects.split(
             y,
             top_db=-silence_thresh,
@@ -37,7 +36,6 @@ def split_on_silence(audio, max_chunk_duration=30, initial_min_silence_len=1000,
             hop_length=int(sr * keep_silence / 1000)
         )
         
-        # 各区間を分割
         chunks = []
         for interval in non_silent_intervals:
             start, end = interval
@@ -45,11 +43,10 @@ def split_on_silence(audio, max_chunk_duration=30, initial_min_silence_len=1000,
             duration = len(audio_chunk) / sr
             
             if duration > max_chunk_duration:
-                # チャンクが長すぎる場合は、パラメータを調整して再分割
                 sub_chunks = split_on_silence(
                     {"array": audio_chunk, "sampling_rate": sr},
                     max_chunk_duration=max_chunk_duration,
-                    initial_min_silence_len=min_silence_len-50,
+                    initial_min_silence_len=min_silence_len-10,
                     initial_silence_thresh=silence_thresh+1,
                     keep_silence=keep_silence
                 )
@@ -57,14 +54,11 @@ def split_on_silence(audio, max_chunk_duration=30, initial_min_silence_len=1000,
             else:
                 chunks.append({"array": audio_chunk, "sampling_rate": sr})
         
-        # すべてのチャンクが30秒以下になったら終了
         if all(len(chunk["array"]) / sr <= max_chunk_duration for chunk in chunks):
             return chunks
         
-        # パラメータを調整して再試行
-        min_silence_len = max(50, min_silence_len - 50)  # 最小50ミリ秒まで下げる
-        silence_thresh = min(-10, silence_thresh + 1)  # 最大-10 dBまで上げる
-
+        min_silence_len = max(50, min_silence_len - 10)
+        silence_thresh = min(-20, silence_thresh + 1)
 
 def save_audio_chunks(chunks, output_dir):
     if not os.path.exists(output_dir):
@@ -88,8 +82,8 @@ def transcribe(audio_file_path, processor, model):
             input_features,
             language="Japanese",
             task="transcribe",
-            num_beams=20,
-            no_repeat_ngram_size=2,
+            num_beams=1,
+            no_repeat_ngram_size=4,
         )
     
     transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)
@@ -106,45 +100,34 @@ def process_chunk(chunk_path, processor, model, chunk_index):
     return result
 
 def post_process_text(text):
-    # 「�」を除去
     text = text.replace("�", "")
-
-    # 任意の文字列が繰り返されているパターンを検出し、1回にまとめる
-    def simplify_repeated_patterns(match):
-        # マッチした部分文字列を1回だけにまとめる
-        return match.group(1)
-
-    # 1文字以上のパターンが2回以上繰り返される場合、それを1回にまとめる
-    text = re.sub(r'((.).?)\1{2,}', simplify_repeated_patterns, text)
-    
     return text
 
 def save_transcription(transcriptions, output_path):
     with open(output_path, "w", encoding="utf-8") as f:
-        for transcription in transcriptions:
-            processed_transcription = post_process_text(transcription)
-            f.write(f"{processed_transcription}")
+        for file_name, file_transcriptions in transcriptions.items():
+            f.write(f"ファイル名: {file_name}\n")
+            for transcription in file_transcriptions:
+                processed_transcription = post_process_text(transcription)
+                f.write(f"{processed_transcription} ")
+            f.write("\n\n")  # 各ファイルの最後に2つの改行を追加
 
-def process_audio_file(audio_file_path, processor, model, output_dir):
+def process_audio_file(audio_file_path, processor, model, output_dir, folder_name):
+    print(audio_file_path)
     audio = load_audio(audio_file_path)
     audio_chunks = split_on_silence(audio)
     audio_file_name = os.path.splitext(os.path.basename(audio_file_path))[0]
-    temp_dir = os.path.join(output_dir, audio_file_name)
+    temp_dir = os.path.join(output_dir, folder_name, audio_file_name)
     chunk_paths = save_audio_chunks(audio_chunks, temp_dir)
 
     transcriptions = []
-    batch_size = 5  # バッチサイズを設定
 
-    for i in range(0, len(chunk_paths), batch_size):
-        batch_chunks = chunk_paths[i:i+batch_size]
-        batch_results = []
+    for i, chunk_path in enumerate(chunk_paths):
+        result = process_chunk(chunk_path, processor, model, i)
+        transcriptions.append(result)
 
-        for j, chunk_path in enumerate(batch_chunks):
-            result = process_chunk(chunk_path, processor, model, i+j)
-            batch_results.append(result)
+    return audio_file_name, transcriptions
 
-        transcriptions.extend(batch_results)
-    return transcriptions
 
 def main():
     processor = WhisperProcessor.from_pretrained(MODEL_PATH, language="Japanese", task="transcribe")
@@ -153,19 +136,21 @@ def main():
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
 
-    for file_name in os.listdir(INPUT_DIR):
-        if file_name.endswith(('.wav', '.mp3', '.flac')):  # 音声ファイルの拡張子を追加
-            audio_file_path = os.path.join(INPUT_DIR, file_name)
-            transcriptions = process_audio_file(audio_file_path, processor, model, OUTPUT_DIR)
+    for folder_name in os.listdir(INPUT_DIR):
+        folder_path = os.path.join(INPUT_DIR, folder_name)
+        if os.path.isdir(folder_path):
+            all_transcriptions = {}
             
-            # 音声ファイルごとに文字起こし結果を保存
-            output_file_name = os.path.splitext(file_name)[0] + ".txt"
+            for file_name in os.listdir(folder_path):
+                if file_name.endswith(('.wav', '.mp3', '.flac')):
+                    audio_file_path = os.path.join(folder_path, file_name)
+                    file_name, transcriptions = process_audio_file(audio_file_path, processor, model, OUTPUT_DIR, folder_name)
+                    all_transcriptions[file_name] = transcriptions
+            
+            # フォルダごとに1つのテキストファイルに結果を保存
+            output_file_name = folder_name + ".txt"
             output_path = os.path.join(OUTPUT_DIR, output_file_name)
-            save_transcription(transcriptions, output_path)
-
-    del model, processor
-    gc.collect()
-    torch.cuda.empty_cache()
+            save_transcription(all_transcriptions, output_path)
 
 if __name__ == "__main__":
     main()

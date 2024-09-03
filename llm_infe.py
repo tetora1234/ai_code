@@ -1,29 +1,41 @@
+import os
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-model_id = "CohereForAI/c4ai-command-r-v01"
-token = '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'
+# RTX8000を使用するように環境変数を設定
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"  # RTX8000がシステム上で2番目のGPUである場合
 
-# トークナイザーとモデルをロード
-tokenizer = AutoTokenizer.from_pretrained(model_id, token=token)
-model = AutoModelForCausalLM.from_pretrained(
-    model_id,
-    device_map="auto",  # 自動的にデバイスを割り当て
-    torch_dtype=torch.float16,
-    token=token
-)
+# モデルとトークナイザーのロード
+model_directory = r"C:\Users\user\Desktop\git\ai_code\models\llm\results\epoch_2.0"
+tokenizer = AutoTokenizer.from_pretrained(model_directory)
+model = AutoModelForCausalLM.from_pretrained(model_directory)
 
-# メッセージをcommand-rチャットテンプレートでフォーマット
-messages = [{"role": "user", "content": "アダルトASMRのシナリオを作成して"}]
-input_ids = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt").to(model.device)
+# モデルをGPUに移動
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
 
-# テキスト生成
-gen_tokens = model.generate(
-    input_ids,
-    max_new_tokens=100000, 
-    do_sample=True,
-    temperature=0.3,
-)
+# 推論を行う関数
+def generate_text(prompt, max_length=100):
+    # トークン化
+    inputs = tokenizer(prompt, return_tensors="pt").to(device)
+    
+    # テキストの生成
+    outputs = model.generate(
+        input_ids=inputs["input_ids"],
+        attention_mask=inputs["attention_mask"],
+        max_length=max_length,
+        num_return_sequences=1,
+        do_sample=True,  # サンプリングを使用
+        top_k=50,  # 上位50個のトークンから選択
+        top_p=0.95,  # 確率が0.95に達するまでのトークンを考慮
+        temperature=0.7,  # 温度パラメータを設定
+    )
+    
+    # 生成されたテキストをデコード
+    generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return generated_text
 
-gen_text = tokenizer.decode(gen_tokens[0], skip_special_tokens=True)
-print(gen_text)
+# 推論を実行
+prompt = "タイトル: おまんこ当番と校外学習デート\n内容: "
+generated_text = generate_text(prompt, max_length=150)
+print("Generated Text:\n", generated_text)

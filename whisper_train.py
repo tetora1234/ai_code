@@ -20,7 +20,7 @@ from transformers import (
 
 # 定数と設定
 CSV_PATH = r"C:\Users\user\Desktop\git\ai_code\dataset\whisper\audio\data.csv"
-MODEL_CONFIG = r"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper3\checkpoint-8912"
+MODEL_CONFIG = r"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper3\checkpoint-2350"
 LANGUAGE = "Japanese"
 TASK = "transcribe"
 OUTPUT_DIR = r"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper"
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     
     training_args = Seq2SeqTrainingArguments(
         output_dir=OUTPUT_DIR,
-        per_device_train_batch_size=12,
+        per_device_train_batch_size=10,
         gradient_accumulation_steps=8,
         learning_rate=1e-5,
         num_train_epochs=10,
