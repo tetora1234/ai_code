@@ -12,6 +12,16 @@ def clean_filename(filename):
     cleaned_name = re.sub(r'^\d+\.\s*', '', cleaned_name)
     cleaned_name = re.sub(r'\d+\.\s*', '', cleaned_name)
     cleaned_name = re.sub(r' なし', '', cleaned_name)
+    cleaned_name = re.sub(r'無し', '', cleaned_name)
+    cleaned_name = re.sub(r'効果音なし', '', cleaned_name)
+    cleaned_name = re.sub(r'差分', '', cleaned_name)
+    cleaned_name = re.sub(r'トラック', '', cleaned_name)
+    cleaned_name = re.sub(r'章', '', cleaned_name)
+    cleaned_name = re.sub(r'時', '', cleaned_name)
+    cleaned_name = re.sub(r'声のみ', '', cleaned_name)
+    cleaned_name = re.sub(r'なし', '', cleaned_name)
+    cleaned_name = re.sub(r'日目', '', cleaned_name)
+    cleaned_name = re.sub(r'反転', '', cleaned_name)
 
     # アルファベットとその他の記号、アンダースコアを削除
     cleaned_name = re.sub(r'[a-zA-Z]', '', cleaned_name)  # アルファベットを削除
@@ -49,5 +59,5 @@ def rename_files_in_folder(folder_path):
                     print(f'No change: {old_path}')
 
 # 使用例
-folder_path = r'C:\Users\user\Desktop\asmr'  # Windows のD:ドライブのルートを指定
+folder_path = r"C:\Users\user\Downloads"
 rename_files_in_folder(folder_path)

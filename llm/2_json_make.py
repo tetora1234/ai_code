@@ -2,7 +2,7 @@ import os
 import json
 
 # フォルダパスを指定
-folder_path = r"C:\Users\user\Desktop\asmr\transcriptions"
+folder_path = r"C:\Users\user\Desktop\txt"
 output_file = "output.json"
 
 # 出力用のリスト

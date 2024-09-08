@@ -14,7 +14,7 @@ filtered_data = []
 for item in data:
     content = item.get('内容', '')
     content_length = len(content)
-    if content_length >= 3000 and content_length <= 4000:
+    if content_length >= 2000 and content_length <= 7000:
         filtered_data.append(item)
     else:
         print(f"削除対象: タイトル: {item.get('タイトル', 'なし')}, 内容の長さ: {content_length}")

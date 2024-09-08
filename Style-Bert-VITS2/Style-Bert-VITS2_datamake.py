@@ -5,9 +5,12 @@ from transformers import WhisperProcessor, WhisperForConditionalGeneration
 import os
 import gc
 
-MODEL_PATH = r"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper\checkpoint-940"
-INPUT_DIR = r"C:\Users\user\Desktop\asmr2"
-OUTPUT_DIR = os.path.join(INPUT_DIR, "transcriptions")
+# モデル名の変数を追加
+MODEL_NAME = "RJ310289"
+MODEL_PATH = rf"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper\checkpoint-940"
+INPUT_DIR = r"C:\Users\user\Desktop\audio\inputs"
+OUTPUT_DIR_BASE = r"C:\Users\user\Desktop\audio"
+OUTPUT_DIR = os.path.join(OUTPUT_DIR_BASE, "Data", MODEL_NAME, "raw")
 
 # OUTPUT_DIRが存在しない場合は作成
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -59,13 +62,10 @@ def split_on_silence(audio, max_chunk_duration=30, initial_min_silence_len=1000,
         min_silence_len = max(50, min_silence_len - 10)
         silence_thresh = min(-20, silence_thresh + 1)
 
-def save_audio_chunks(chunks, output_dir):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    
+def save_audio_chunks(chunks, base_name, output_dir):
     chunk_paths = []
     for i, chunk in enumerate(chunks):
-        chunk_path = os.path.join(output_dir, f"chunk_{i + 1}.wav")
+        chunk_path = os.path.join(output_dir, f"{base_name}-{i}.wav")
         sf.write(chunk_path, chunk["array"], chunk["sampling_rate"])
         chunk_paths.append(chunk_path)
     
@@ -95,29 +95,26 @@ def transcribe(audio_file_path, processor, model):
 
 def process_chunk(chunk_path, processor, model, chunk_index):
     result = transcribe(chunk_path, processor, model)
-    print(f'{chunk_index + 1}番目: {result}')
+    print(f'{chunk_index}番目: {result}')
     return result
 
 def post_process_text(text):
     text = text.replace("�", "")
     return text
 
-def save_transcription(transcriptions, output_path):
+def save_transcription_esd_list(transcriptions, output_path):
     with open(output_path, "w", encoding="utf-8") as f:
         for file_name, file_transcriptions in transcriptions.items():
-            f.write(f"ファイル名: {file_name}\n")
-            for transcription in file_transcriptions:
+            for i, transcription in enumerate(file_transcriptions):
                 processed_transcription = post_process_text(transcription)
-                f.write(f"{processed_transcription} ")
-            f.write("\n\n")  # 各ファイルの最後に2つの改行を追加
+                f.write(f"{file_name}-{i}.wav|test|JP|{processed_transcription}\n")
 
-def process_audio_file(audio_file_path, processor, model, output_dir, folder_name):
+def process_audio_file(audio_file_path, processor, model, output_dir):
     print(audio_file_path)
     audio = load_audio(audio_file_path)
     audio_chunks = split_on_silence(audio)
     audio_file_name = os.path.splitext(os.path.basename(audio_file_path))[0]
-    temp_dir = os.path.join(output_dir, folder_name, audio_file_name)
-    chunk_paths = save_audio_chunks(audio_chunks, temp_dir)
+    chunk_paths = save_audio_chunks(audio_chunks, audio_file_name, output_dir)
 
     transcriptions = []
 
@@ -127,29 +124,22 @@ def process_audio_file(audio_file_path, processor, model, output_dir, folder_nam
 
     return audio_file_name, transcriptions
 
-
 def main():
     processor = WhisperProcessor.from_pretrained(MODEL_PATH, language="Japanese", task="transcribe")
     model = WhisperForConditionalGeneration.from_pretrained(MODEL_PATH).to(device)
 
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
+    all_transcriptions = {}
+    
+    for file_name in os.listdir(INPUT_DIR):
+        if file_name.endswith(('.wav', '.mp3', '.flac')):
+            audio_file_path = os.path.join(INPUT_DIR, file_name)
+            file_name, transcriptions = process_audio_file(audio_file_path, processor, model, OUTPUT_DIR)
+            all_transcriptions[file_name] = transcriptions
 
-    for folder_name in os.listdir(INPUT_DIR):
-        folder_path = os.path.join(INPUT_DIR, folder_name)
-        if os.path.isdir(folder_path):
-            all_transcriptions = {}
-            
-            for file_name in os.listdir(folder_path):
-                if file_name.endswith(('.wav', '.mp3', '.flac')):
-                    audio_file_path = os.path.join(folder_path, file_name)
-                    file_name, transcriptions = process_audio_file(audio_file_path, processor, model, OUTPUT_DIR, folder_name)
-                    all_transcriptions[file_name] = transcriptions
-            
-            # フォルダごとに1つのテキストファイルに結果を保存
-            output_file_name = folder_name + ".txt"
-            output_path = os.path.join(OUTPUT_DIR, output_file_name)
-            save_transcription(all_transcriptions, output_path)
+    # 結果をesd.listに保存
+    esd_list_path = os.path.join(OUTPUT_DIR_BASE, "Data", MODEL_NAME, "esd.list")
+    os.makedirs(os.path.dirname(esd_list_path), exist_ok=True)
+    save_transcription_esd_list(all_transcriptions, esd_list_path)
 
 if __name__ == "__main__":
     main()

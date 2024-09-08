@@ -1,15 +1,13 @@
-import os
-import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-
-model_directory = "CohereForAI/c4ai-command-r-08-2024"
+model_directory = r"C:\Users\user\Desktop\git\ai_code\models\llm\fine_tuned_model"
 tokenizer = AutoTokenizer.from_pretrained(model_directory)
-model = AutoModelForCausalLM.from_pretrained(model_directory)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device)
+# Load the model in 4-bit quantization
+model = AutoModelForCausalLM.from_pretrained(
+    model_directory,
+    device_map="auto"
+)
 
 def generate_long_scenario(prompt, total_length, chunk_size):
     generated_text = prompt
@@ -26,8 +24,7 @@ def generate_long_scenario(prompt, total_length, chunk_size):
     return generated_text
 
 def generate_text(prompt, max_new_tokens):
-    inputs = tokenizer(prompt, return_tensors="pt").to(device)
-    
+    inputs = tokenizer(prompt, return_tensors="pt")
     outputs = model.generate(
         input_ids=inputs["input_ids"],
         attention_mask=inputs["attention_mask"],
@@ -41,9 +38,9 @@ def generate_text(prompt, max_new_tokens):
     return tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
 
 # 使用例
-prompt = "タイトル: テスト\n内容: "
-total_length = 4000  # 生成するトークンの総数
-chunk_size = 200
+prompt = "タイトル: 密着耳元お下品オホ鳴きオナニーサポートご奉仕\n内容: "
+total_length = 200  # 生成するトークンの総数
+chunk_size = 50
 scenario = generate_long_scenario(prompt, total_length, chunk_size)
 
-print("生成されたシナリオ:\n", scenario)
+print(scenario)

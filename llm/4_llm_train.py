@@ -1,11 +1,21 @@
 import os
+import torch
+
+# RTX8000を使用するように環境変数を設定
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
+print(f"CUDA Device Name: {torch.cuda.get_device_name(0)}")  # 使用しているGPUの名前を表示
+
+
 import json
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer, DataCollatorForLanguageModeling, BitsAndBytesConfig
 from datasets import Dataset
 from huggingface_hub import login
-import torch
 import gc
 from peft import get_peft_model, LoraConfig, TaskType
+from transformers.trainer_callback import TrainerCallback
 
 # 定数の定義
 HF_TOKEN = "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"
@@ -17,15 +27,6 @@ SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\models\llm\fine_tuned_model
 
 # Hugging Faceにログイン
 login(token=HF_TOKEN)
-
-# RTX8000を使用するように環境変数を設定
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
-print(f"CUDA Device Name: {torch.cuda.get_device_name(0)}")  # 使用しているGPUの名前を表示
-
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 # データの読み込み
 def load_data(file_path):
@@ -49,11 +50,20 @@ def preprocess_text(examples):
 # トークン化関数
 def tokenize_function(example):
     text = example['学習用']
-    tokenized = tokenizer(text, padding=True, truncation=True, max_length=4000, return_tensors="pt")
+    tokenized = tokenizer(text, padding=True, truncation=True, max_length=7000, return_tensors="pt")
     return {
         "input_ids": tokenized["input_ids"][0],
         "attention_mask": tokenized["attention_mask"][0]
     }
+
+class MemoryManagementCallback(TrainerCallback):
+    def __init__(self, steps_to_cleanup):
+        self.steps_to_cleanup = steps_to_cleanup
+
+    def on_step_end(self, args, state, control, **kwargs):
+        if state.global_step % self.steps_to_cleanup == 0:
+            gc.collect()
+            torch.cuda.empty_cache()
 
 # メイン関数
 def main():
@@ -74,10 +84,10 @@ def main():
 
     # 量子化設定の準備
     quantization_config = BitsAndBytesConfig(
-        load_in_4bit=True,  # 4-bit 量子化
+        load_in_4bit=True,
         bnb_4bit_use_double_quant=True,
         bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.float16  # 計算をbfloat16で行う
+        bnb_4bit_compute_dtype=torch.float16
     )
 
     # 量子化を適用したモデルのロード
@@ -109,8 +119,8 @@ def main():
     # トレーニング引数の設定
     training_args = TrainingArguments(
         output_dir=OUTPUT_DIR,
-        num_train_epochs=50,
-        learning_rate=1e-4,
+        num_train_epochs=5,
+        learning_rate=1e-3,
         per_device_train_batch_size=1,
         logging_dir=LOGGING_DIR,
         logging_steps=10,
@@ -121,12 +131,15 @@ def main():
         lr_scheduler_type="constant",
     )
 
+    memory_callback = MemoryManagementCallback(steps_to_cleanup=1)
+
     # トレーナーの設定
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=tokenized_datasets,
         data_collator=data_collator,
+        callbacks=[memory_callback],
     )
 
     # トレーニングの実行
@@ -137,10 +150,6 @@ def main():
 
     # トークナイザーの保存
     tokenizer.save_pretrained(SAVE_DIRECTORY)
-
-    # メモリの解放
-    torch.cuda.empty_cache()
-    gc.collect()
 
 if __name__ == "__main__":
     main()
