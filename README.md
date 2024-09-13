@@ -38,5 +38,5 @@
 - **4_llm_train.py**  
   ファインチューニング
 
-  - **5_llm_infe.py**  
+- **5_llm_infe.py**  
   推論
