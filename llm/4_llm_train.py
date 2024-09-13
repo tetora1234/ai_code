@@ -8,22 +8,21 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 print(f"CUDA Device Name: {torch.cuda.get_device_name(0)}")  # 使用しているGPUの名前を表示
 
-
 import json
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer, DataCollatorForLanguageModeling, BitsAndBytesConfig
 from datasets import Dataset
 from huggingface_hub import login
 import gc
-from peft import get_peft_model, LoraConfig, TaskType
+from peft import get_peft_model, LoraConfig, TaskType, PeftModel
 from transformers.trainer_callback import TrainerCallback
 
 # 定数の定義
 HF_TOKEN = "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"
 DATA_FILE_PATH = r"C:\Users\user\Desktop\git\ai_code\dataset\llm\filtered_output.json"
-MODEL_NAME = "akineAItech/kagemusya-7B-v1.5"
+MODEL_NAME = r"C:\Users\user\Desktop\git\ai_code\models\llm\fine_tuned_model"
 OUTPUT_DIR = r"C:\Users\user\Desktop\git\ai_code\models\llm\results"
 LOGGING_DIR = r"C:\Users\user\Desktop\git\ai_code\models\llm\logs"
-SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\models\llm\fine_tuned_model"
+SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\models\llm\fine_tuned_model2"
 
 # Hugging Faceにログイン
 login(token=HF_TOKEN)
@@ -77,10 +76,9 @@ def main():
     # モデルとトークナイザーの準備
     global tokenizer
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_auth_token=True)
-    
-    # パディングトークンが設定されていない場合、適切なトークンを設定する
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
+
+    # PADトークンの追加
+    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
 
     # 量子化設定の準備
     quantization_config = BitsAndBytesConfig(
@@ -94,7 +92,7 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_NAME,
         use_auth_token=True,
-        quantization_config=quantization_config,
+        # quantization_config=quantization_config, #量子化する場合
     )
 
     # LoRAの設定
@@ -119,15 +117,14 @@ def main():
     # トレーニング引数の設定
     training_args = TrainingArguments(
         output_dir=OUTPUT_DIR,
-        num_train_epochs=5,
-        learning_rate=1e-3,
+        num_train_epochs=20,
+        learning_rate=1e-4,
         per_device_train_batch_size=1,
         logging_dir=LOGGING_DIR,
-        logging_steps=10,
+        logging_steps=1,
         save_strategy="epoch",
         fp16=True,
-        optim="galore_adamw",
-        optim_target_modules=["attn", "mlp"],
+        optim="adamw_torch",
         lr_scheduler_type="constant",
     )
 
@@ -145,11 +142,13 @@ def main():
     # トレーニングの実行
     trainer.train()
 
-    # モデルの保存
-    trainer.save_model(SAVE_DIRECTORY)
+    # モデルの保存前にマージ
+    merged_model = model.merge_and_unload()
 
-    # トークナイザーの保存
+    # モデルの保存
+    merged_model.save_pretrained(SAVE_DIRECTORY)
     tokenizer.save_pretrained(SAVE_DIRECTORY)
+    print(f"Saving merged model to {SAVE_DIRECTORY}")
 
 if __name__ == "__main__":
     main()

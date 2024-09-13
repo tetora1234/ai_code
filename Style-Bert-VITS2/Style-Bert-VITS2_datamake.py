@@ -6,10 +6,10 @@ import os
 import gc
 
 # モデル名の変数を追加
-MODEL_NAME = "RJ310289"
+MODEL_NAME = "slicer_opt"
 MODEL_PATH = rf"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper\checkpoint-940"
-INPUT_DIR = r"C:\Users\user\Desktop\audio\inputs"
-OUTPUT_DIR_BASE = r"C:\Users\user\Desktop\audio"
+INPUT_DIR = r"C:\Users\user\Downloads\GPT-SoVITS-beta0706\input"
+OUTPUT_DIR_BASE = r"C:\Users\user\Downloads\GPT-SoVITS-beta0706\output\asr_opt"
 OUTPUT_DIR = os.path.join(OUTPUT_DIR_BASE, "Data", MODEL_NAME, "raw")
 
 # OUTPUT_DIRが存在しない場合は作成
@@ -107,7 +107,7 @@ def save_transcription_esd_list(transcriptions, output_path):
         for file_name, file_transcriptions in transcriptions.items():
             for i, transcription in enumerate(file_transcriptions):
                 processed_transcription = post_process_text(transcription)
-                f.write(f"{file_name}-{i}.wav|test|JP|{processed_transcription}\n")
+                f.write(f"{OUTPUT_DIR}\{file_name}-{i}.wav|{MODEL_NAME}|JP|{processed_transcription}\n")
 
 def process_audio_file(audio_file_path, processor, model, output_dir):
     print(audio_file_path)
@@ -137,7 +137,7 @@ def main():
             all_transcriptions[file_name] = transcriptions
 
     # 結果をesd.listに保存
-    esd_list_path = os.path.join(OUTPUT_DIR_BASE, "Data", MODEL_NAME, "esd.list")
+    esd_list_path = os.path.join(OUTPUT_DIR_BASE, "Data", MODEL_NAME, "slicer_opt.list")
     os.makedirs(os.path.dirname(esd_list_path), exist_ok=True)
     save_transcription_esd_list(all_transcriptions, esd_list_path)
 

@@ -1,12 +1,16 @@
+import os
+
+# RTX8000を使用するように環境変数を設定
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # RTX8000がシステム上で2番目のGPUである場合
+
 import torch
 import librosa
 import soundfile as sf
 from transformers import WhisperProcessor, WhisperForConditionalGeneration
-import os
 import gc
 
 MODEL_PATH = r"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper\checkpoint-940"
-INPUT_DIR = r"C:\Users\user\Desktop\asmr2"
+INPUT_DIR = r"C:\Users\user\Desktop\data"
 OUTPUT_DIR = os.path.join(INPUT_DIR, "transcriptions")
 
 # OUTPUT_DIRが存在しない場合は作成
