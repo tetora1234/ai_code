@@ -1,13 +1,25 @@
-Read Me
+# AI 関連コードリポジトリ
 
-このリポジトリはAI関係のコードをまとめたものです。
+このリポジトリには、AI 関係のさまざまなスクリプトとコードがまとめられています。
 
-wisper
-  check_row.py　データセットチェック
-  json_convert.py　json変換
-  wav_convert.py　wav変換
-  whisper_infe.py　推論
-  whisper_train.py　ファインチューニング
-  
-Style-Bert-VITS2
-  Style-Bert-VITS2_datamake.py データセット作成
+## wisper
+
+- **check_row.py**  
+  データセットのチェックを行います。
+
+- **json_convert.py**  
+  json 形式への変換を行います。
+
+- **wav_convert.py**  
+  wav 形式への変換を行います。
+
+- **whisper_infe.py**  
+  推論を行います。
+
+- **whisper_train.py**  
+  ファインチューニングを行います。
+
+## Style-Bert-VITS2
+
+- **Style-Bert-VITS2_datamake.py**  
+  データセットの作成を行います。
