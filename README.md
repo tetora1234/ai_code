@@ -23,3 +23,20 @@
 
 - **Style-Bert-VITS2_datamake.py**  
   データセットの作成を行います。
+
+## llm
+
+- **1_filename_format.py**  
+  ファイルのタイトルを整形
+
+- **2_json_make.py**  
+  データセット用json作成
+
+- **3_llm_json.py**  
+  jsonの整形
+
+- **4_llm_train.py**  
+  ファインチューニング
+
+  - **5_llm_infe.py**  
+  推論
