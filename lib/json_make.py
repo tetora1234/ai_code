@@ -3,7 +3,7 @@ import json
 
 # フォルダパスを指定
 folder_path = r"C:\Users\user\Desktop\txt"
-output_file = "output.json"
+output_file = r"C:\Users\user\Desktop\git\ai_code\dataset\llm\output.json"
 
 # 出力用のリスト
 data = []

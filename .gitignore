@@ -1,3 +1,6 @@
-/dataset/
-/models/
-/outpus/
+/llm/models/
+/llm/outpus/
+/llm/dataset/
+/wisper/models/
+/wisper/outpus/
+/wisper/dataset/

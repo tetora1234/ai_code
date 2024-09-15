@@ -8,7 +8,7 @@ import gc
 # モデル名の変数を追加
 MODEL_NAME = "slicer_opt"
 MODEL_PATH = rf"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper\checkpoint-940"
-INPUT_DIR = r"C:\Users\user\Downloads\GPT-SoVITS-beta0706\input"
+INPUT_DIR = r"C:\Users\user\Downloads\GPT-SoVITS-beta0706\inputs"
 OUTPUT_DIR_BASE = r"C:\Users\user\Downloads\GPT-SoVITS-beta0706\output\asr_opt"
 OUTPUT_DIR = os.path.join(OUTPUT_DIR_BASE, "Data", MODEL_NAME, "raw")
 

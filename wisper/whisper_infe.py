@@ -10,7 +10,7 @@ from transformers import WhisperProcessor, WhisperForConditionalGeneration
 import gc
 
 MODEL_PATH = r"C:\Users\user\Desktop\git\ai_code\models\whisper\Visual-novel-whisper\checkpoint-940"
-INPUT_DIR = r"C:\Users\user\Desktop\data"
+INPUT_DIR = r"C:\Users\user\Downloads\data"
 OUTPUT_DIR = os.path.join(INPUT_DIR, "transcriptions")
 
 # OUTPUT_DIRが存在しない場合は作成

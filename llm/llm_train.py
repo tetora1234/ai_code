@@ -117,7 +117,7 @@ def main():
     # トレーニング引数の設定
     training_args = TrainingArguments(
         output_dir=OUTPUT_DIR,
-        num_train_epochs=20,
+        num_train_epochs=25,
         learning_rate=1e-4,
         per_device_train_batch_size=1,
         logging_dir=LOGGING_DIR,
