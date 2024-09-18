@@ -7,7 +7,7 @@ from datetime import datetime
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 print(f"CUDA Device Name: {torch.cuda.get_device_name(0)}")
 
-model_directory = r"C:\Users\user\Desktop\git\ai_code\models\llm\fine_tuned_model"
+model_directory = r"C:\Users\user\Desktop\git\ai_code\llm\models\fine_tuned_model"
 tokenizer = AutoTokenizer.from_pretrained(model_directory)
 model = AutoModelForCausalLM.from_pretrained(
     model_directory,
@@ -23,23 +23,25 @@ def generate_text(prompt):
     outputs = model.generate(
         input_ids=inputs["input_ids"],
         attention_mask=inputs["attention_mask"],
-        max_new_tokens=250,
+        max_new_tokens=500,
         do_sample=True,
-        top_k=1,
-        repetition_penalty=1.1,
-        temperature=1.2,
+        top_k=3,
+        temperature=1.0,
         pad_token_id=tokenizer.pad_token_id,
         eos_token_id=tokenizer.eos_token_id,
         streamer=streamer,
     )
 
     new_tokens = outputs[0][inputs["input_ids"].size(1):]
-    return tokenizer.decode(new_tokens, skip_special_tokens=True), outputs
+    
+    # skip_special_tokens=Falseにして</s>の確認を行う
+    generated_text = tokenizer.decode(new_tokens, skip_special_tokens=False)
+    return generated_text
 
 def save_generated_text(generated_text, prompt):
     current_time = datetime.now().strftime("%y%m%d%H%M%S")
     filename = f"{current_time}.txt"
-    output_directory = r"C:\Users\user\Desktop\git\ai_code\outpus"
+    output_directory = r"C:\Users\user\Desktop\git\ai_code\llm\outputs"
     os.makedirs(output_directory, exist_ok=True)
     file_path = os.path.join(output_directory, filename)
 
@@ -47,21 +49,21 @@ def save_generated_text(generated_text, prompt):
         f.write(f"{prompt}{generated_text}")
 
 def generate_full_text(prompt, initial_prompt):
-    generated_text, outputs = generate_text(prompt)
+    generated_text = generate_text(prompt)
     
-    # EOSトークンが含まれているかどうかをチェック
-    eos_token_id = tokenizer.eos_token_id
-    if eos_token_id in outputs[0].tolist():
+    # EOSトークンとして"</s>"が含まれているかを確認
+    if "</s>" in generated_text:
+        save_generated_text(generated_text, prompt)
         print("EOSトークンが見つかりました。初期プロンプトで再スタートします。")
         prompt = initial_prompt  # プロンプトを初期プロンプトにリセット
     else:
         prompt += generated_text  # プロンプトを更新
     
-    save_generated_text(generated_text, prompt)
+    
     return prompt
 
 # 使用例
-initial_prompt = """タイトル: 唾液たっぷりドスケベフェラ純愛オホ声えっち\n内容: """
+initial_prompt = """タイトル: ベロチュー大好きドMオホ声低音クール性処理おまんこメイド\n内容: """
 generated_text = initial_prompt
 
 while True:
