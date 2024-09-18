@@ -1,6 +1,9 @@
 /llm/models/
-/llm/outpus/
+/llm/outputs/
 /llm/dataset/
 /wisper/models/
-/wisper/outpus/
+/wisper/outputs/
 /wisper/dataset/
+/TextClassification/dataset/
+/TextClassification/models/
+/GPTSoVITS/

@@ -7,7 +7,7 @@ from datetime import datetime
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 print(f"CUDA Device Name: {torch.cuda.get_device_name(0)}")
 
-model_directory = r"C:\Users\user\Desktop\git\ai_code\models\llm\fine_tuned_model2"
+model_directory = r"C:\Users\user\Desktop\git\ai_code\models\llm\fine_tuned_model"
 tokenizer = AutoTokenizer.from_pretrained(model_directory)
 model = AutoModelForCausalLM.from_pretrained(
     model_directory,
@@ -34,7 +34,7 @@ def generate_text(prompt):
     )
 
     new_tokens = outputs[0][inputs["input_ids"].size(1):]
-    return tokenizer.decode(new_tokens, skip_special_tokens=True)
+    return tokenizer.decode(new_tokens, skip_special_tokens=True), outputs
 
 def save_generated_text(generated_text, prompt):
     current_time = datetime.now().strftime("%y%m%d%H%M%S")
@@ -46,14 +46,23 @@ def save_generated_text(generated_text, prompt):
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(f"{prompt}{generated_text}")
 
-def generate_full_text(prompt):
-    generated_text = generate_text(prompt)
+def generate_full_text(prompt, initial_prompt):
+    generated_text, outputs = generate_text(prompt)
+    
+    # EOSトークンが含まれているかどうかをチェック
+    eos_token_id = tokenizer.eos_token_id
+    if eos_token_id in outputs[0].tolist():
+        print("EOSトークンが見つかりました。初期プロンプトで再スタートします。")
+        prompt = initial_prompt  # プロンプトを初期プロンプトにリセット
+    else:
+        prompt += generated_text  # プロンプトを更新
+    
     save_generated_text(generated_text, prompt)
-    return prompt + generated_text
+    return prompt
 
 # 使用例
-prompt = """タイトル: 唾液たっぷりドスケベフェラ純愛オホ声えっち\n内容: """
-generated_text = prompt
+initial_prompt = """タイトル: 唾液たっぷりドスケベフェラ純愛オホ声えっち\n内容: """
+generated_text = initial_prompt
 
 while True:
-    generated_text = generate_full_text(generated_text)
+    generated_text = generate_full_text(generated_text, initial_prompt)

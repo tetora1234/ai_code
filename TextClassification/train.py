@@ -2,21 +2,21 @@ import pandas as pd
 import torch
 from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from datasets import Dataset
-import numpy as np
-from torch.nn import functional as F
 
-# データセットの読み込み
-df = pd.read_csv('dataset.csv')  # CSVファイルのパス
+# データセットの読み込み (FilePath, Text, Classification が含まれる)
+df = pd.read_csv('C:\\Users\\user\\Desktop\\git\\ai_code\\TextClassification\\dataset\\filtered_out.csv')
 
-# ラベルをエンコードする
-label_encoder = LabelEncoder()
-df['label'] = label_encoder.fit_transform(df['label'])  # "normal" -> 0, "aegi" -> 1, "chupa" -> 2
+# 空のテキストやNaNを含む行を削除
+df = df.dropna(subset=['Text', 'Classification'])
+df = df[df['Text'].str.strip() != '']
 
-# データセットを訓練データとテストデータに分割
+# ラベルをそのままリスト化 ("Classification" 列)
+classification_map = {"通常": 0, "あえぎ": 1, "チュパ": 2}
+df['label'] = df['Classification'].map(classification_map)  # "通常" -> 0, "あえぎ" -> 1, "チュパ" -> 2
+
+# データセットを訓練データとテストデータに分割 (Text 列を使用)
 train_texts, test_texts, train_labels, test_labels = train_test_split(
-    df['text'].tolist(),
+    df['Text'].tolist(),
     df['label'].tolist(),
     test_size=0.2
 )
@@ -25,9 +25,6 @@ train_texts, test_texts, train_labels, test_labels = train_test_split(
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
 # トークン化
-def tokenize_function(examples):
-    return tokenizer(examples["text"], padding="max_length", truncation=True)
-
 train_encodings = tokenizer(train_texts, padding=True, truncation=True, max_length=128, return_tensors='pt')
 test_encodings = tokenizer(test_texts, padding=True, truncation=True, max_length=128, return_tensors='pt')
 
@@ -53,15 +50,15 @@ model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_l
 
 # トレーニングの設定
 training_args = TrainingArguments(
-    output_dir='./results',          # 出力ディレクトリ
-    num_train_epochs=3,              # エポック数
-    per_device_train_batch_size=16,  # バッチサイズ
-    per_device_eval_batch_size=16,   # 評価バッチサイズ
+    output_dir='C:\\Users\\user\\Desktop\\git\\ai_code\\TextClassification\\models',  # モデルの保存ディレクトリ
+    num_train_epochs=30,              # エポック数
+    per_device_train_batch_size=128,  # バッチサイズ
+    per_device_eval_batch_size=128,   # 評価バッチサイズ
     warmup_steps=500,                # ウォームアップステップ
     weight_decay=0.01,               # 重みの減衰率
-    logging_dir='./logs',            # ログディレクトリ
+    logging_dir='./TextClassification/logs',            # ログディレクトリ
     logging_steps=10,
-    evaluation_strategy="steps",     # 評価の頻度
+    evaluation_strategy="epoch",     # 評価の頻度
 )
 
 # トレーナーの初期化
@@ -74,19 +71,3 @@ trainer = Trainer(
 
 # モデルのトレーニング
 trainer.train()
-
-# テストデータで予測
-predictions = trainer.predict(test_dataset)
-
-# 予測結果のsoftmax確率を計算
-softmax_probs = F.softmax(torch.tensor(predictions.predictions), dim=-1).numpy()
-
-# 各テキストに対する予測確率と予測ラベル
-for i, text in enumerate(test_texts):
-    probs = softmax_probs[i]
-    predicted_label = np.argmax(probs)
-    predicted_label_name = label_encoder.inverse_transform([predicted_label])[0]
-    
-    print(f"Text: {text}")
-    print(f"Predicted probabilities: normal={probs[0]:.4f}, aegi={probs[1]:.4f}, chupa={probs[2]:.4f}")
-    print(f"Predicted label: {predicted_label_name}\n")
