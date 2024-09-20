@@ -2,7 +2,7 @@ import json
 
 # JSONファイルのパス
 input_file_path = r"C:\Users\user\Downloads\ωstar_Bishoujo Mangekyou Ibun - Yuki Onna\index.json"
-output_file_path = r"C:\Users\user\Downloads\ωstar_Bishoujo Mangekyou Ibun - Yuki Onna\out.json"
+output_file_path = r"C:\Users\user\Downloads\ωstar_Bishoujo Mangekyou Ibun - Yuki Onna\index_out.json"
 
 # 特定のスピーカーを指定
 target_speaker = "姫"

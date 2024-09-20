@@ -39,13 +39,13 @@ def process_json_files(directory, convert_flg):
                             
                             # 変換タスクを追加
                             task = executor.submit(convert_audio, input_path, convert_flg)
-                            audio_tasks.append((task, item['Text']))
+                            audio_tasks.append((task, item['Text'], item['Speaker']))
 
         # すべての変換タスクが完了するのを待つ
-        for i, (task, text) in enumerate(audio_tasks, 1):
+        for i, (task, text, speaker) in enumerate(audio_tasks, 1):
             result = task.result()
             if result:
-                csv_data.append([result.replace('\\', '/'), text])
+                csv_data.append([result.replace('\\', '/'), text, speaker])
             print(f"進捗: {i}/{len(audio_tasks)}")
     
     return csv_data
@@ -53,14 +53,14 @@ def process_json_files(directory, convert_flg):
 def write_csv(data, output_file):
     with open(output_file, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerow(['FilePath', 'Text'])  # ヘッダー行を書き込む
+        writer.writerow(['FilePath', 'Text', 'Speaker'])  # ヘッダー行を書き込む
         writer.writerows(data)
     print(f"CSVファイルが作成されました: {output_file}")
 
 # メイン処理
 directory = r"C:\Users\user\Downloads"  # 指定されたWindowsの絶対パス
 output_file = os.path.join(directory, 'data.csv')
-convert_flg = False  # 変換を有効にする場合はTrue、無効にする場合はFalseに設定
+convert_flg = True  # 変換を有効にする場合はTrue、無効にする場合はFalseに設定
 
 print("処理を開始します...")
 csv_data = process_json_files(directory, convert_flg)

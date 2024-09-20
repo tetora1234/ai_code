@@ -7,7 +7,7 @@ from datetime import datetime
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 print(f"CUDA Device Name: {torch.cuda.get_device_name(0)}")
 
-model_directory = r"C:\Users\user\Desktop\git\ai_code\llm\models\fine_tuned_model"
+model_directory = r"C:\Users\user\Desktop\git\ai_code\llm\models\fine_tuned_model_v1"
 tokenizer = AutoTokenizer.from_pretrained(model_directory)
 model = AutoModelForCausalLM.from_pretrained(
     model_directory,
@@ -26,7 +26,8 @@ def generate_text(prompt):
         max_new_tokens=500,
         do_sample=True,
         top_k=3,
-        temperature=1.0,
+        repetition_penalty=1.2,
+        temperature=0.9,
         pad_token_id=tokenizer.pad_token_id,
         eos_token_id=tokenizer.eos_token_id,
         streamer=streamer,
@@ -63,7 +64,7 @@ def generate_full_text(prompt, initial_prompt):
     return prompt
 
 # 使用例
-initial_prompt = """タイトル: ベロチュー大好きドMオホ声低音クール性処理おまんこメイド\n内容: """
+initial_prompt = """タイトル: 純真ロリ天使のらぶらぶフェラチオ\n内容: """
 generated_text = initial_prompt
 
 while True:

@@ -12,20 +12,27 @@ from main import TextToSpeechSystem
 # 初期化
 counter = 0
 # パスとパラメータの定義
-sovits_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\sirone\sirone_e25_s5875.pth"
-gpt_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\sirone\sirone-e25.ckpt"
-normal_audio = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\sirone\raw\srn-K04-0091-0.wav"
-normal_reference_text = "私はここにいます。ちゃんと、ゆうりちゃんと遊んだことも覚えてます"
-aegi_audio = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\sirone\raw\srn-B12H-0449-0.wav"
-aegi_reference_text = "あんっ、私の、オマンコがっ、あっ、ああっ、どんどん、いやらしくっ、はぁっ、なってますっ！"
-chupa_audio = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\sirone\raw\srn-B17H-0279-0.wav"
-chupa_reference_text = "んっ、んっ、はぁっ、ちゅっ、れろっ…はぁっ…はむっ、ちぷっ、んちゅ、ちゥ…"
-normal_tts_system = TextToSpeechSystem(sovits_path, gpt_path, normal_audio, normal_reference_text)
-aegi_tts_system = TextToSpeechSystem(sovits_path, gpt_path, aegi_audio, aegi_reference_text)
-chupa_tts_system = TextToSpeechSystem(sovits_path, gpt_path, chupa_audio, chupa_reference_text)
+normal_sovits_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\base\hime_e24_s1704.pth"
+normal_gpt_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\base\hime-e30.ckpt"
+normal_audio = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\dataset\normal_folder\him0017.wav"
+normal_reference_text = "もう、貴方、足一本しか持てないの？"
+
+aegi_sovits_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\aegi\hime_aegi_e24_s936.pth"
+aegi_gpt_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\aegi\hime_aegi-e50.ckpt"
+aegi_audio = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\data\aegi_folder\him0437.wav"
+aegi_reference_text = "きゃふぅっ！ひぃっ！あはぁっ……はぁ、はぁ、はぁぁっ！あひぃいんんっ"
+
+chupa_sovits_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\chupa\hime_chupa_e24_s240.pth"
+chupa_gpt_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\chupa\hime_chupa-e50.ckpt"
+chupa_audio = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\data\chupa_folder\him0157.wav"
+chupa_reference_text = "ンッ、んふぅっ……チュゥッ……ちゅぷちゅぷっ、んちゅるっ、ちゅぴっ、ちゅぱぁっ……じゅりゅりゅりゅりゅっ……！"
+
+normal_tts_system = TextToSpeechSystem(normal_sovits_path, normal_gpt_path, normal_audio, normal_reference_text)
+aegi_tts_system = TextToSpeechSystem(aegi_sovits_path, aegi_gpt_path, aegi_audio, aegi_reference_text)
+chupa_tts_system = TextToSpeechSystem(chupa_sovits_path, chupa_gpt_path, chupa_audio, chupa_reference_text)
 
 # ファイルパスの定義
-text_file_path = r"C:\Users\user\Desktop\git\ai_code\llm\outputs\240918190423.txt"
+text_file_path = r"C:\Users\user\Desktop\git\ai_code\llm\outputs\240919064744.txt"
 
 # テキストを句読点で分割する関数
 def split_sentences(text):
@@ -63,7 +70,7 @@ for sentence in sentences:
     print(f"各クラスの予測確率: {probs}")
 
     # インデックスを使ってファイル名を生成
-    input_audio_path = fr"C:\Users\user\Downloads\audio_{counter}.wav"
+    input_audio_path = fr"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\outputs\audio_{counter}.wav"
 
     if label == "通常":
         normal_tts_system.process_text_file(sentence, input_audio_path)
