@@ -19,13 +19,13 @@ from transformers import (
 )
 
 # 定数と設定
-CSV_PATH = r"C:\Users\user\Desktop\git\ai_code\wisper\dataset\data.csv"
-MODEL_CONFIG = r"C:\Users\user\Desktop\git\ai_code\wisper\models\Visual-novel-whisper\checkpoint-940"
+CSV_PATH = r"C:\Users\user\Downloads\filtered_transcript_with_similarity.csv"
+MODEL_CONFIG = r"C:\Users\user\Desktop\git\ai_code\wisper\models\Visual-novel-whisper2\checkpoint-1852"
 LANGUAGE = "Japanese"
 TASK = "transcribe"
-OUTPUT_DIR = r"C:\Users\user\Desktop\git\ai_code\wisper\models\Visual-novel-whisper2"
+OUTPUT_DIR = r"C:\Users\user\Desktop\git\ai_code\wisper\models\Visual-novel-whisper3"
 SAMPLING_RATE = 16000
-SAMPLE_FRAC = 0.3  # サンプリングする割合
+SAMPLE_FRAC = 0.99  # サンプリングする割合
 
 def load_and_prepare_data(csv_path: str, sample_frac: float) -> Dataset:
     try:
@@ -33,8 +33,8 @@ def load_and_prepare_data(csv_path: str, sample_frac: float) -> Dataset:
         
         # データセットのスキーマを定義
         features = Features({
-            'FilePath': Value('string'),
-            'Text': Value('string')
+            'filename': Value('string'),
+            'transcript': Value('string')
         })
         
         dataset = load_dataset('csv', data_files=csv_path, features=features, split='train')
@@ -51,13 +51,13 @@ def load_and_prepare_data(csv_path: str, sample_frac: float) -> Dataset:
         print("Processing audio files")
         
         def process_audio(example):
-            audio_path = example['FilePath']
+            audio_path = example['filename']
             # librosaを使用して音声をロードし、必要に応じてリサンプリング
             audio_array, _ = librosa.load(audio_path, sr=SAMPLING_RATE)
             example['audio'] = {'array': audio_array, 'sampling_rate': SAMPLING_RATE}
             return example
         
-        dataset = dataset.map(process_audio, remove_columns=['FilePath'], num_proc=12)
+        dataset = dataset.map(process_audio, remove_columns=['filename'], num_proc=12)
         
         print("Dataset preparation completed")
         return dataset
@@ -69,7 +69,7 @@ def load_and_prepare_data(csv_path: str, sample_frac: float) -> Dataset:
 def prepare_dataset(batch: Dict, processor: WhisperProcessor) -> Optional[Dict]:
     audio = batch["audio"]
     batch["input_features"] = processor.feature_extractor(audio["array"], sampling_rate=SAMPLING_RATE).input_features[0]
-    batch["labels"] = processor.tokenizer(batch["Text"]).input_ids
+    batch["labels"] = processor.tokenizer(batch["transcript"]).input_ids
     return batch
 
 # データコラトラの定義
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     prepared_dataset = dataset.map(
         prepare_dataset,
         fn_kwargs={"processor": processor},
-        remove_columns=['audio', 'Text'],
+        remove_columns=['audio', 'transcript'],
         num_proc=12
     )
     
