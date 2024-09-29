@@ -3,9 +3,7 @@ import torch
 
 # RTX8000を使用するように環境変数を設定
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
 print(f"CUDA Device Name: {torch.cuda.get_device_name(0)}")  # 使用しているGPUの名前を表示
 
 import json

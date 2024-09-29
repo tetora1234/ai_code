@@ -4,13 +4,13 @@ import numpy as np
 from torch.nn import functional as F
 
 # トークナイザーとモデルのロード（保存されたモデルディレクトリを指定）
-model_dir = r"C:\Users\user\Desktop\git\ai_code\TextClassification\models\checkpoint-11160"
+model_dir = r"C:\Users\user\Desktop\git\ai_code\TextClassification\models\checkpoint-23130"
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = BertForSequenceClassification.from_pretrained(model_dir)
 model.eval()  # 推論モードに切り替える
 
 # ラベルの逆マッピング
-label_inverse_map = {0: "通常", 1: "あえぎ", 2: "チュパ"}
+label_inverse_map = {0: "usual", 1: "aegi", 2: "chupa"}
 
 def classify_text(text):
     """
@@ -39,7 +39,7 @@ def classify_text(text):
 
     # 結果を返す
     return predicted_label_name, {
-        "通常": probs[0],
-        "あえぎ": probs[1],
-        "チュパ": probs[2]
+        "usual": probs[0],
+        "aegi": probs[1],
+        "chupa": probs[2]
     }

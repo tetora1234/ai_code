@@ -19,8 +19,8 @@ from transformers import (
 )
 
 # 定数と設定
-CSV_PATH = r"C:\Users\user\Downloads\filtered_transcript_with_similarity.csv"
-MODEL_CONFIG = r"C:\Users\user\Desktop\git\ai_code\wisper\models\Visual-novel-whisper2\checkpoint-1852"
+CSV_PATH = r"D:\filter.csv"
+MODEL_CONFIG = r"C:\Users\user\Desktop\git\ai_code\wisper\models\Visual-novel-whisper"
 LANGUAGE = "Japanese"
 TASK = "transcribe"
 OUTPUT_DIR = r"C:\Users\user\Desktop\git\ai_code\wisper\models\Visual-novel-whisper3"
@@ -33,7 +33,7 @@ def load_and_prepare_data(csv_path: str, sample_frac: float) -> Dataset:
         
         # データセットのスキーマを定義
         features = Features({
-            'filename': Value('string'),
+            'full_filepath': Value('string'),
             'transcript': Value('string')
         })
         
@@ -51,13 +51,13 @@ def load_and_prepare_data(csv_path: str, sample_frac: float) -> Dataset:
         print("Processing audio files")
         
         def process_audio(example):
-            audio_path = example['filename']
+            audio_path = example['full_filepath']
             # librosaを使用して音声をロードし、必要に応じてリサンプリング
             audio_array, _ = librosa.load(audio_path, sr=SAMPLING_RATE)
             example['audio'] = {'array': audio_array, 'sampling_rate': SAMPLING_RATE}
             return example
         
-        dataset = dataset.map(process_audio, remove_columns=['filename'], num_proc=12)
+        dataset = dataset.map(process_audio, remove_columns=['full_filepath'], num_proc=12)
         
         print("Dataset preparation completed")
         return dataset
@@ -144,7 +144,7 @@ if __name__ == "__main__":
         output_dir=OUTPUT_DIR,
         per_device_train_batch_size=10,
         gradient_accumulation_steps=8,
-        learning_rate=1e-5,
+        learning_rate=1e-4,
         num_train_epochs=10,
         fp16=True if torch.cuda.is_available() else False,  # GPUが利用可能な場合のみTrue
         evaluation_strategy="no",  # エポックごとに評価

@@ -23,11 +23,10 @@ def generate_text(prompt):
     outputs = model.generate(
         input_ids=inputs["input_ids"],
         attention_mask=inputs["attention_mask"],
-        max_new_tokens=500,
+        max_new_tokens=1000,
         do_sample=True,
         top_k=3,
-        repetition_penalty=1.2,
-        temperature=0.9,
+        temperature=0.8,
         pad_token_id=tokenizer.pad_token_id,
         eos_token_id=tokenizer.eos_token_id,
         streamer=streamer,
@@ -50,7 +49,15 @@ def save_generated_text(generated_text, prompt):
         f.write(f"{prompt}{generated_text}")
 
 def generate_full_text(prompt, initial_prompt):
-    generated_text = generate_text(prompt)
+    while True:
+        generated_text = generate_text(prompt)
+        
+        # 生成されたテキストに�が含まれているか確認
+        if "�" in generated_text:
+            print("�が含まれています。再試行します。")
+            continue  # 再試行する
+        else:
+            break  # �が含まれていない場合はループを抜ける
     
     # EOSトークンとして"</s>"が含まれているかを確認
     if "</s>" in generated_text:
@@ -60,11 +67,10 @@ def generate_full_text(prompt, initial_prompt):
     else:
         prompt += generated_text  # プロンプトを更新
     
-    
     return prompt
 
 # 使用例
-initial_prompt = """タイトル: 純真ロリ天使のらぶらぶフェラチオ\n内容: """
+initial_prompt = """タイトル: オホ声ラブラブ本気の子作りセックス\n内容: """
 generated_text = initial_prompt
 
 while True:

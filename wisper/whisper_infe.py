@@ -1,7 +1,7 @@
 import os
 
 # RTX8000を使用するように環境変数を設定
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"  # RTX8000がシステム上で2番目のGPUである場合
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # RTX8000がシステム上で2番目のGPUである場合
 
 import torch
 import librosa
