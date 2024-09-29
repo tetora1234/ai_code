@@ -1,7 +1,5 @@
 import sys
 import re
-import sounddevice as sd
-from scipy.io import wavfile
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -102,8 +100,19 @@ csv_transcripts = load_csv_transcripts(csv_file_path)
 
 audio_files = []
 
+# 短すぎるテキストを結合する際に記号で終わっている場合、スペースを追加する関数
+def add_space_if_ends_with_punctuation(text):
+    # 文末が句読点（。、！？♪など）の場合、スペースを追加
+    if re.search(r'[。！？♪]$', text):
+        return text + " "  # 文末にスペースを追加
+    return text  # それ以外の場合はそのまま返す
+
 for sentence in sentences:
     # 保存されている短いテキストがあれば、それを現在の文に結合
+    if pending_text:
+        # pending_textが記号で終わっていたらスペースを追加
+        pending_text = add_space_if_ends_with_punctuation(pending_text)
+
     sentence = pending_text + sentence
 
     if len(sentence) < MIN_TEXT_LENGTH:
@@ -121,6 +130,10 @@ for sentence in sentences:
     # 出力ファイルパスを定義（インデックスを使ってファイル名を生成）
     output_audio_path = fr"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\outputs\audio_{counter}.wav"
 
+    #print(f"ラベル: {label}")
+    #print(f"類似テキスト: {similar_text}")
+    print(f"処理中の文: {sentence}")
+
     # 音声合成システムの初期化と処理
     if label == "usual":
         normal_tts_system = TextToSpeechSystem(normal_sovits_path, normal_gpt_path, similar_audio_path, similar_text)
@@ -132,10 +145,6 @@ for sentence in sentences:
         chupa_tts_system = TextToSpeechSystem(chupa_sovits_path, chupa_gpt_path, similar_audio_path, similar_text)
         chupa_tts_system.process_text_file(sentence, output_audio_path)
 
-    print(f"ラベル: {label}")
-    print(f"類似テキスト: {similar_text}")
-    print(f"処理中の文: {sentence}")
-
     # 短すぎるテキストの保存をリセット
     pending_text = ""
 
@@ -144,15 +153,10 @@ for sentence in sentences:
 
     audio_files.append(output_audio_path)
 
-    # 音声ファイルを再生
-    # sample_rate, data = wavfile.read(output_audio_path)
-    # sd.play(data, samplerate=sample_rate)
-    # sd.wait()  # 再生が終了するまで待機
-
 # 音声ファイルの結合（無音挿入バージョン）
-def combine_audio_files(audio_file_paths, output_path, silence_duration_ms=500):
+def combine_audio_files(audio_file_paths, output_path, silence_duration_ms=1000):
     combined = AudioSegment.empty()  # 空の音声を作成
-    silence = AudioSegment.silent(duration=silence_duration_ms)  # 無音（500ミリ秒）を作成
+    silence = AudioSegment.silent(duration=silence_duration_ms)
     
     for i, file in enumerate(audio_file_paths):
         audio = AudioSegment.from_wav(file)  # wavファイルを読み込む
