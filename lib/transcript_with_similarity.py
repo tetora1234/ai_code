@@ -15,7 +15,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # Whisperモデルを読み込む
-model_path = r"C:\Users\user\Desktop\git\ai_code\wisper\models\Visual-novel-whisper3"
+model_path = r"C:\Users\user\Desktop\git\ai_code\wisper\models\Visual-novel-whisper"
 processor = WhisperProcessor.from_pretrained(model_path)
 model = WhisperForConditionalGeneration.from_pretrained(model_path).to(device)  # モデルをGPUに移動
 
@@ -48,7 +48,17 @@ with open(new_csv_path, mode='w', newline='', encoding='utf-8') as csvfile:
         inputs = processor(audio, sampling_rate=sr, return_tensors="pt").input_features.to(device)  # 入力をGPUに移動
 
         # 推論を実行
-        predicted_ids = model.generate(inputs)
+        #predicted_ids = model.generate(inputs)
+
+        with torch.no_grad():
+            predicted_ids = model.generate(
+                inputs,
+                language="Japanese",
+                task="transcribe",
+                num_beams=1,
+                no_repeat_ngram_size=4,
+            )
+
         transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)[0]
 
         # CSVのテキストと推論結果を比較して類似度を計算

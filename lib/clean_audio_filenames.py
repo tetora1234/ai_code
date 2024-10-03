@@ -31,7 +31,7 @@ def clean_filename(filename):
     cleaned_name = re.sub(r'効果音あり', '', cleaned_name)
     cleaned_name = re.sub(r'射精音', '', cleaned_name)
     cleaned_name = re.sub(r' ', '', cleaned_name)
-  
+    cleaned_name = re.sub(r'第', '', cleaned_name)
 
     # アルファベットとその他の記号、アンダースコアを削除
     cleaned_name = re.sub(r'[a-zA-Z]', '', cleaned_name)  # アルファベットを削除
@@ -69,5 +69,5 @@ def rename_files_in_folder(folder_path):
                     print(f'No change: {old_path}')
 
 # 使用例
-folder_path = r"C:\Users\user\Desktop\asmr"
+folder_path = r"E:\asmr"
 rename_files_in_folder(folder_path)

@@ -16,11 +16,10 @@ from transformers.trainer_callback import TrainerCallback
 
 # 定数の定義
 HF_TOKEN = "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"
-DATA_FILE_PATH = r"C:\Users\user\Desktop\git\ai_code\dataset\llm\filtered_output.json"
-MODEL_NAME = r"C:\Users\user\Desktop\git\ai_code\models\llm\fine_tuned_model"
-OUTPUT_DIR = r"C:\Users\user\Desktop\git\ai_code\models\llm\results"
-LOGGING_DIR = r"C:\Users\user\Desktop\git\ai_code\models\llm\logs"
-SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\models\llm\fine_tuned_model2"
+DATA_FILE_PATH = r"C:\Users\user\Desktop\git\ai_code\llm\dataset\data.json"
+MODEL_NAME = "akineAItech/kagemusya-7B-v1.5"
+LOGGING_DIR = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v1\logs"
+SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v1"
 
 # Hugging Faceにログイン
 login(token=HF_TOKEN)
@@ -40,18 +39,27 @@ def create_dataset(data):
 
 # テキストの前処理
 def preprocess_text(examples):
-    return {
-        '学習用': [f"タイトル: {examples['タイトル']}\n内容: {examples['内容']}"]
-    }
+    return_data = {'学習用': [f"タイトル: {examples['タイトル']} 内容: {examples['内容']}"]}
+    #print(return_data)
+    return return_data
 
 # トークン化関数
 def tokenize_function(example):
     text = example['学習用']
     tokenized = tokenizer(text, padding=True, truncation=True, max_length=7000, return_tensors="pt")
+    
+    # トークンIDの確認
+    #print(tokenized["input_ids"][0])
+    
+    # トークンIDを平文に復元
+    decoded_text = tokenizer.decode(tokenized["input_ids"][0], skip_special_tokens=False)
+    #print("復元されたテキスト:", decoded_text)
+    
     return {
         "input_ids": tokenized["input_ids"][0],
         "attention_mask": tokenized["attention_mask"][0]
     }
+
 
 class MemoryManagementCallback(TrainerCallback):
     def __init__(self, steps_to_cleanup):
@@ -62,18 +70,42 @@ class MemoryManagementCallback(TrainerCallback):
             gc.collect()
             torch.cuda.empty_cache()
 
+class SaveModelAndTokenizerCallback(TrainerCallback):
+    def __init__(self, model, tokenizer, output_dir):
+        self.model = model
+        self.tokenizer = tokenizer
+        self.output_dir = output_dir
+
+class SaveModelAndTokenizerCallback(TrainerCallback):
+    def __init__(self, model, tokenizer, output_dir):
+        self.model = model
+        self.tokenizer = tokenizer
+        self.output_dir = output_dir
+
+    def on_epoch_end(self, args, state, control, **kwargs):
+        # チェックポイントのディレクトリを取得
+        checkpoint_dir = os.path.join(self.output_dir, f"checkpoint-{state.global_step}")
+        
+        # チェックポイントディレクトリが存在しない場合は作成
+        os.makedirs(checkpoint_dir, exist_ok=True)
+        
+        # モデルとトークナイザーを保存
+        self.model.save_pretrained(checkpoint_dir)
+        self.tokenizer.save_pretrained(checkpoint_dir)
+        print(f"Model and tokenizer saved to checkpoint: {checkpoint_dir}")
+
 # メイン関数
 def main():
     # データの読み込みとデータセットの作成
     data = load_data(DATA_FILE_PATH)
     dataset = create_dataset(data)
     
-    # テキストの前処理
-    dataset = dataset.map(preprocess_text)
-
     # モデルとトークナイザーの準備
     global tokenizer
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_auth_token=True)
+
+    # テキストの前処理
+    dataset = dataset.map(preprocess_text)
 
     # PADトークンの追加
     tokenizer.add_special_tokens({'pad_token': '[PAD]'})
@@ -90,7 +122,8 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_NAME,
         use_auth_token=True,
-        # quantization_config=quantization_config, #量子化する場合
+        #device_map="auto",
+        quantization_config=quantization_config, #量子化する場合
     )
 
     # LoRAの設定
@@ -112,10 +145,13 @@ def main():
     # データコレータの設定
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
+    # SaveModelCallbackのインスタンスを作成
+    save_model_and_tokenizer_callback = SaveModelAndTokenizerCallback(model, tokenizer, SAVE_DIRECTORY)
+
     # トレーニング引数の設定
     training_args = TrainingArguments(
-        output_dir=OUTPUT_DIR,
-        num_train_epochs=25,
+        output_dir=SAVE_DIRECTORY,
+        num_train_epochs=15,
         learning_rate=1e-4,
         per_device_train_batch_size=1,
         logging_dir=LOGGING_DIR,
@@ -134,7 +170,7 @@ def main():
         args=training_args,
         train_dataset=tokenized_datasets,
         data_collator=data_collator,
-        callbacks=[memory_callback],
+        callbacks=[memory_callback, save_model_and_tokenizer_callback],
     )
 
     # トレーニングの実行

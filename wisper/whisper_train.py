@@ -19,11 +19,11 @@ from transformers import (
 )
 
 # 定数と設定
-CSV_PATH = r"D:\filter.csv"
+CSV_PATH = r"C:\Users\user\Desktop\git\ai_code\wisper\filter.csv"
 MODEL_CONFIG = r"C:\Users\user\Desktop\git\ai_code\wisper\models\Visual-novel-whisper"
 LANGUAGE = "Japanese"
 TASK = "transcribe"
-OUTPUT_DIR = r"C:\Users\user\Desktop\git\ai_code\wisper\models\Visual-novel-whisper3"
+OUTPUT_DIR = r"C:\Users\user\Desktop\git\ai_code\wisper\models\Visual-novel-whisper2"
 SAMPLING_RATE = 16000
 SAMPLE_FRAC = 0.99  # サンプリングする割合
 
@@ -145,7 +145,7 @@ if __name__ == "__main__":
         per_device_train_batch_size=10,
         gradient_accumulation_steps=8,
         learning_rate=1e-4,
-        num_train_epochs=10,
+        num_train_epochs=50,
         fp16=True if torch.cuda.is_available() else False,  # GPUが利用可能な場合のみTrue
         evaluation_strategy="no",  # エポックごとに評価
         save_strategy="epoch",  # エポックごとに保存

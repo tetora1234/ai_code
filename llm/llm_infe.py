@@ -4,10 +4,12 @@ import torch
 from datetime import datetime
 
 # RTX8000を使用するように環境変数を設定
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 print(f"CUDA Device Name: {torch.cuda.get_device_name(0)}")
 
-model_directory = r"C:\Users\user\Desktop\git\ai_code\llm\models\fine_tuned_model_v1"
+model_directory = r"C:\Users\user\Desktop\git\ai_code\llm\models\merged_model"
+#model_directory = "akineAItech/kagemusya-7B-v1.5"
+
 tokenizer = AutoTokenizer.from_pretrained(model_directory)
 model = AutoModelForCausalLM.from_pretrained(
     model_directory,
@@ -23,10 +25,10 @@ def generate_text(prompt):
     outputs = model.generate(
         input_ids=inputs["input_ids"],
         attention_mask=inputs["attention_mask"],
-        max_new_tokens=1000,
+        max_new_tokens=10000,
         do_sample=True,
         top_k=3,
-        temperature=0.8,
+        temperature=1.2,
         pad_token_id=tokenizer.pad_token_id,
         eos_token_id=tokenizer.eos_token_id,
         streamer=streamer,
@@ -40,7 +42,15 @@ def generate_text(prompt):
 
 def save_generated_text(generated_text, prompt):
     current_time = datetime.now().strftime("%y%m%d%H%M%S")
-    filename = f"{current_time}.txt"
+    # 「タイトル: 」の部分を探して、その後の文字列を抜き出す
+    title_prefix = "タイトル: "
+    start_index = prompt.find(title_prefix) + len(title_prefix)
+    end_index = prompt.find("\n", start_index)
+
+    # タイトル部分を抜き出す
+    title = prompt[start_index:end_index].strip()
+
+    filename = f"{title}_{current_time}.txt"
     output_directory = r"C:\Users\user\Desktop\git\ai_code\llm\outputs"
     os.makedirs(output_directory, exist_ok=True)
     file_path = os.path.join(output_directory, filename)
@@ -70,7 +80,8 @@ def generate_full_text(prompt, initial_prompt):
     return prompt
 
 # 使用例
-initial_prompt = """タイトル: オホ声ラブラブ本気の子作りセックス\n内容: """
+initial_prompt = """タイトル: ゲームしながら自由におまんこを使わせてくれるゲーマーカノジョ\n内容: """
+
 generated_text = initial_prompt
 
 while True:

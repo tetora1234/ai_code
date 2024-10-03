@@ -7,7 +7,7 @@ csv_path = r"D:\out.csv"
 df = pd.read_csv(csv_path)
 
 # similarity_score以下の行だけをフィルタリング
-threshold = 0.90
+threshold = 0.80
 filtered_df = df[df['similarity_score'] <= threshold]
 
 # 新しいCSVファイルとして保存
