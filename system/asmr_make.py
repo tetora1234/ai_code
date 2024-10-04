@@ -185,12 +185,12 @@ def combine_audio_files(audio_file_paths, text_lengths, output_path):
                 # 文字数が5文字以上の場合は0.75秒〜1.2秒の無音をランダムで挿入
                 silence_duration_ms = random.uniform(750, 900)
             else:
-                silence_duration_ms = random.uniform(150, 250)
+                silence_duration_ms = random.uniform(50, 150)
 
             silence = AudioSegment.silent(duration=silence_duration_ms)
             combined += silence
 
     combined.export(output_path, format='wav')
 
-final_output_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\outputs\combined_audio.wav"
+final_output_path = rf"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\outputs\{os.path.basename(text_file_path)}.wav"
 combine_audio_files(audio_files, text_lengths, final_output_path)
