@@ -1,0 +1,14 @@
+[usual]
+sovits_path=C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\sirone\base\sirone_e24_s5184.pth
+gpt_path=C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\sirone\base\sirone-e50.ckpt
+
+[aegi]
+sovits_path=C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\sirone\aegi\sirone_aegi_e24_s2736.pth
+gpt_path=C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\sirone\aegi\sirone_aegi-e50.ckpt
+
+[chupa]
+sovits_path=C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\sirone\chupa\sirone_chupa_e24_s624.pth
+gpt_path=C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\sirone\chupa\sirone_chupa-e50.ckpt
+
+[csv]
+csv_file_path=C:\Users\user\Desktop\git\ai_code\system\model_configs\sirone\audio_class.csv

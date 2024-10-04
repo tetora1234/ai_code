@@ -16,7 +16,7 @@ from transformers.trainer_callback import TrainerCallback
 
 # 定数の定義
 HF_TOKEN = "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"
-DATA_FILE_PATH = r"C:\Users\user\Desktop\git\ai_code\llm\dataset\data.json"
+DATA_FILE_PATH = r"C:\Users\user\Desktop\git\ai_code\llm\dataset\filtered_data.json"
 MODEL_NAME = "akineAItech/kagemusya-7B-v1.5"
 LOGGING_DIR = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v1\logs"
 SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v1"

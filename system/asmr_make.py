@@ -1,9 +1,11 @@
+import os
 import sys
 import re
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from pydub import AudioSegment
+import configparser
 
 # module フォルダのパスを sys.path に追加
 sys.path.append(r"C:\Users\user\Desktop\git\ai_code\module")
@@ -16,19 +18,50 @@ counter = 0
 pending_text = ""  # 短すぎるテキストを一時的に保存する変数
 MIN_TEXT_LENGTH = 10  # 最小文字数
 
-# パスとパラメータの定義
-normal_sovits_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\base\hime_e24_s1704.pth"
-normal_gpt_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\base\hime-e30.ckpt"
+# モデル名に基づいて設定ファイルのパスを動的に構築し、設定を読み込む関数
+def load_paths_by_model(model_name):
+    # 基本の設定ファイルパスのパターン
+    base_dir = r"C:\Users\user\Desktop\git\ai_code\system\model_configs"
+    file_name = "config.txt"
+    
+    # モデル名に基づいてパスを構築
+    file_path = os.path.join(base_dir, model_name, file_name)
+    
+    # 設定ファイルを読み込む
+    config = configparser.ConfigParser()
+    config.read(file_path, encoding='utf-8')
+    
+    # 既存の設定フォーマットに合わせて辞書を返す
+    paths = {
+        'usual': {
+            'sovits_path': config.get('usual', 'sovits_path'),
+            'gpt_path': config.get('usual', 'gpt_path')
+        },
+        'aegi': {
+            'sovits_path': config.get('aegi', 'sovits_path'),
+            'gpt_path': config.get('aegi', 'gpt_path')
+        },
+        'chupa': {
+            'sovits_path': config.get('chupa', 'sovits_path'),
+            'gpt_path': config.get('chupa', 'gpt_path')
+        },
+        'csv': {
+            'csv_file_path': config.get('csv', 'csv_file_path')
+        }
+    }
+    
+    return paths
 
-aegi_sovits_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\aegi\hime_aegi_e24_s936.pth"
-aegi_gpt_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\aegi\hime_aegi-e50.ckpt"
+# モデル名を指定して設定ファイルのパスを読み込み
+model_name = 'sirone'  # 'sirone' など別のモデル名も指定可能
+paths = load_paths_by_model(model_name)
 
-chupa_sovits_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\chupa\hime_chupa_e24_s240.pth"
-chupa_gpt_path = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\chupa\hime_chupa-e50.ckpt"
+# CSVファイルのパスも取得できます
+csv_file_path = paths['csv']['csv_file_path']
 
 # ファイルパスの定義
-text_file_path = r"C:\Users\user\Desktop\git\ai_code\llm\outputs\test.txt"
-csv_file_path = r"C:\Users\user\Desktop\git\ai_code\system\audio_class.csv"
+text_file_path = r"C:\Users\user\Desktop\git\ai_code\llm\outputs\バイト中の生意気ギャルをバックヤードで逆転わからせ指導!_241003134751.txt"
+csv_file_path = paths['csv']['csv_file_path']
 
 # テキストを句読点で分割する関数
 def split_sentences(text):
@@ -130,19 +163,15 @@ for sentence in sentences:
     # 出力ファイルパスを定義（インデックスを使ってファイル名を生成）
     output_audio_path = fr"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\outputs\audio_{counter}.wav"
 
-    #print(f"ラベル: {label}")
-    #print(f"類似テキスト: {similar_text}")
-    print(f"処理中の文: {sentence}")
-
     # 音声合成システムの初期化と処理
     if label == "usual":
-        normal_tts_system = TextToSpeechSystem(normal_sovits_path, normal_gpt_path, similar_audio_path, similar_text)
+        normal_tts_system = TextToSpeechSystem(paths['usual']['sovits_path'], paths['usual']['gpt_path'], similar_audio_path, similar_text)
         normal_tts_system.process_text_file(sentence, output_audio_path)
     elif label == "aegi":
-        aegi_tts_system = TextToSpeechSystem(aegi_sovits_path, aegi_gpt_path, similar_audio_path, similar_text)
+        aegi_tts_system = TextToSpeechSystem(paths['aegi']['sovits_path'], paths['aegi']['gpt_path'], similar_audio_path, similar_text)
         aegi_tts_system.process_text_file(sentence, output_audio_path)
     elif label == "chupa":
-        chupa_tts_system = TextToSpeechSystem(chupa_sovits_path, chupa_gpt_path, similar_audio_path, similar_text)
+        chupa_tts_system = TextToSpeechSystem(paths['chupa']['sovits_path'], paths['chupa']['gpt_path'], similar_audio_path, similar_text)
         chupa_tts_system.process_text_file(sentence, output_audio_path)
 
     # 短すぎるテキストの保存をリセット
