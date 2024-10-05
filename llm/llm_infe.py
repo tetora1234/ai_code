@@ -7,7 +7,7 @@ from datetime import datetime
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 print(f"CUDA Device Name: {torch.cuda.get_device_name(0)}")
 
-model_directory = r"C:\Users\user\Desktop\git\ai_code\llm\models\merged_model"
+model_directory = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v1"
 #model_directory = "akineAItech/kagemusya-7B-v1.5"
 
 tokenizer = AutoTokenizer.from_pretrained(model_directory)
@@ -25,10 +25,11 @@ def generate_text(prompt):
     outputs = model.generate(
         input_ids=inputs["input_ids"],
         attention_mask=inputs["attention_mask"],
-        max_new_tokens=10000,
+        max_new_tokens=4000,
         do_sample=True,
         top_k=3,
-        temperature=1.2,
+        temperature=0.4,
+        repetition_penalty=1.1,
         pad_token_id=tokenizer.pad_token_id,
         eos_token_id=tokenizer.eos_token_id,
         streamer=streamer,
@@ -80,7 +81,7 @@ def generate_full_text(prompt, initial_prompt):
     return prompt
 
 # 使用例
-initial_prompt = """タイトル: ゲームしながら自由におまんこを使わせてくれるゲーマーカノジョ\n内容: """
+initial_prompt = """タイトル: ロリサキュバス\n内容: """
 
 generated_text = initial_prompt
 

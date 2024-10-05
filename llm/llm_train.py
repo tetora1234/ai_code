@@ -17,9 +17,9 @@ from transformers.trainer_callback import TrainerCallback
 # 定数の定義
 HF_TOKEN = "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"
 DATA_FILE_PATH = r"C:\Users\user\Desktop\git\ai_code\llm\dataset\filtered_data.json"
-MODEL_NAME = "akineAItech/kagemusya-7B-v1.5"
-LOGGING_DIR = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v1\logs"
-SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v1"
+MODEL_NAME = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v1"
+LOGGING_DIR = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v2\logs"
+SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v2"
 
 # Hugging Faceにログイン
 login(token=HF_TOKEN)
@@ -151,7 +151,7 @@ def main():
     # トレーニング引数の設定
     training_args = TrainingArguments(
         output_dir=SAVE_DIRECTORY,
-        num_train_epochs=15,
+        num_train_epochs=5,
         learning_rate=1e-4,
         per_device_train_batch_size=1,
         logging_dir=LOGGING_DIR,

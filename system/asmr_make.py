@@ -1,6 +1,5 @@
 import os
 import random
-import sys
 import re
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -9,9 +8,6 @@ from pydub import AudioSegment
 import configparser
 
 # module フォルダのパスを sys.path に追加
-sys.path.append(r"C:\Users\user\Desktop\git\ai_code\module")
-sys.path.append(r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS")
-from TextClassification_infe_module import classify_text
 from main import TextToSpeechSystem
 
 # 初期化
