@@ -7,7 +7,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 from pydub import AudioSegment
 import configparser
 
-# module フォルダのパスを sys.path に追加
+import sys
+import os
+
+# GPTSoVITS フォルダへのパスを追加
+sys.path.append(os.path.abspath(r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS"))
+
+# モジュールのインポート
 from main import TextToSpeechSystem
 
 # 初期化
@@ -49,16 +55,14 @@ def load_paths_by_model(model_name):
 model_name = 'sirone'  # 'sirone' など別のモデル名も指定可能
 paths = load_paths_by_model(model_name)
 
-# CSVファイルのパスも取得できます
-csv_file_path = paths['csv']['csv_file_path']
-
 # ファイルパスの定義
-text_file_path = r"C:\Users\user\Desktop\git\ai_code\llm\outputs\バイト中の生意気ギャルをバックヤードで逆転わからせ指導!_241003134751.txt"
+text_file_path = r"C:\Users\user\Desktop\git\ai_code\llm\outputs\ドスケベ長乳シスターさんがチンカス汚ちんぽに媚び媚びご奉仕してくれるお話♪_241007165422.txt"
+file_name = os.path.splitext(os.path.basename(text_file_path))[0]
 csv_file_path = paths['csv']['csv_file_path']
 
 # テキストを句読点で分割する関数
 def split_sentences(text):
-    sentences = re.split(r'(?<=[。！？♥])', text)
+    sentences = re.split(r'(?<=[。！？♥♡])', text)
     return [s.strip() for s in sentences if s.strip()]
 
 # ファイルから内容部分だけを取得する関数
@@ -153,7 +157,13 @@ for category, sentence in category_text_pairs:
         print(f"文 '{sentence}' に対する適切な類似テキストが見つかりませんでした。")
         continue
 
-    output_audio_path = fr"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\outputs\audio_{counter}.wav"
+    # フォルダを含むパス
+    output_audio_path = fr"C:\Users\user\Desktop\git\ai_code\system\outputs\{file_name}\audio_{counter}.wav"
+    output_folder = os.path.dirname(output_audio_path)
+
+    # フォルダが存在しない場合、作成する
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
 
     # 音声合成システムの初期化と処理
     print(f"{category}\n{sentence}\n{similar_text}")
@@ -177,9 +187,9 @@ def combine_audio_files(audio_file_paths, text_lengths, output_path):
         
         # 次のファイルが存在する場合に無音を挿入
         if i < len(audio_file_paths) - 1:
-            if text_lengths[i] > 5:
-                # 文字数が5文字以上の場合は0.75秒〜1.2秒の無音をランダムで挿入
-                silence_duration_ms = random.uniform(750, 900)
+            if text_lengths[i] > 10:
+                # 文字数が5文字以上の場合
+                silence_duration_ms = random.uniform(300, 500)
             else:
                 silence_duration_ms = random.uniform(50, 150)
 
@@ -188,5 +198,5 @@ def combine_audio_files(audio_file_paths, text_lengths, output_path):
 
     combined.export(output_path, format='wav')
 
-final_output_path = rf"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\outputs\{os.path.basename(text_file_path)}.wav"
+final_output_path = rf"C:\Users\user\Desktop\git\ai_code\system\outputs\{file_name}\{file_name}.wav"
 combine_audio_files(audio_files, text_lengths, final_output_path)

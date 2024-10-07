@@ -7,8 +7,7 @@ from datetime import datetime
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 print(f"CUDA Device Name: {torch.cuda.get_device_name(0)}")
 
-model_directory = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v1"
-#model_directory = "akineAItech/kagemusya-7B-v1.5"
+model_directory = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr\merged_model_checkpoint-12012"
 
 tokenizer = AutoTokenizer.from_pretrained(model_directory)
 model = AutoModelForCausalLM.from_pretrained(
@@ -25,11 +24,12 @@ def generate_text(prompt):
     outputs = model.generate(
         input_ids=inputs["input_ids"],
         attention_mask=inputs["attention_mask"],
-        max_new_tokens=4000,
+        max_new_tokens=10000,
         do_sample=True,
-        top_k=3,
-        temperature=0.4,
+        top_k=5,
+        temperature=0.7,
         repetition_penalty=1.1,
+        use_cache=True,
         pad_token_id=tokenizer.pad_token_id,
         eos_token_id=tokenizer.eos_token_id,
         streamer=streamer,
@@ -81,7 +81,7 @@ def generate_full_text(prompt, initial_prompt):
     return prompt
 
 # 使用例
-initial_prompt = """タイトル: ロリサキュバス\n内容: """
+initial_prompt = """タイトル: ドスケベ長乳シスターさんがチンカス汚ちんぽに媚び媚びご奉仕してくれるお話♪\n内容: """
 
 generated_text = initial_prompt
 

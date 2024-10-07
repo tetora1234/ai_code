@@ -4,6 +4,6 @@
 /wisper/models/
 /wisper/outputs/
 /wisper/dataset/
-/TextClassification/dataset/
-/TextClassification/models/
+/system/outputs/
+/system/models/
 /GPTSoVITS/

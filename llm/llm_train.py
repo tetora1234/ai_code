@@ -11,15 +11,15 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments,
 from datasets import Dataset
 from huggingface_hub import login
 import gc
-from peft import get_peft_model, LoraConfig, TaskType, PeftModel
+from peft import get_peft_model, LoraConfig, TaskType
 from transformers.trainer_callback import TrainerCallback
 
 # 定数の定義
 HF_TOKEN = "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"
 DATA_FILE_PATH = r"C:\Users\user\Desktop\git\ai_code\llm\dataset\filtered_data.json"
-MODEL_NAME = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v1"
-LOGGING_DIR = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v2\logs"
-SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v2"
+MODEL_NAME = "akineAItech/kagemusya-7B-v1.5"
+LOGGING_DIR = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr\logs"
+SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr"
 
 # Hugging Faceにログイン
 login(token=HF_TOKEN)
@@ -53,7 +53,7 @@ def tokenize_function(example):
     
     # トークンIDを平文に復元
     decoded_text = tokenizer.decode(tokenized["input_ids"][0], skip_special_tokens=False)
-    #print("復元されたテキスト:", decoded_text)
+    print("復元されたテキスト:", decoded_text)
     
     return {
         "input_ids": tokenized["input_ids"][0],
@@ -151,7 +151,7 @@ def main():
     # トレーニング引数の設定
     training_args = TrainingArguments(
         output_dir=SAVE_DIRECTORY,
-        num_train_epochs=5,
+        num_train_epochs=30,
         learning_rate=1e-4,
         per_device_train_batch_size=1,
         logging_dir=LOGGING_DIR,

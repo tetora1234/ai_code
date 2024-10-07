@@ -9,7 +9,8 @@ import soundfile as sf
 from transformers import WhisperProcessor, WhisperForConditionalGeneration
 import gc
 
-MODEL_PATH = r"C:\Users\user\Desktop\git\ai_code\wisper\models\Visual-novel-whisper"
+MODEL_PATH = r"C:\Users\user\Desktop\git\ai_code\wisper\models\whisper-large-v3-nsfw"
+#MODEL_PATH = "openai/whisper-large-v3"
 INPUT_DIR = r"E:\asmr"
 OUTPUT_DIR = os.path.join(INPUT_DIR, "transcriptions")
 
