@@ -1,6 +1,7 @@
 import os
 import random
 import re
+import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -21,9 +22,13 @@ counter = 0
 audio_files = []
 text_lengths = []  # 音声に対応するテキストの長さを保存
 
+# モデル名を指定して設定ファイルのパスを読み込み
+model_name = 'yumemi'
+text_file_path = r"C:\Users\user\Desktop\git\ai_code\llm\outputs\アオハル系お姫様と発情アプリで我慢できないオホ声えっち_241009042824.txt"
+
 # モデル名に基づいて設定ファイルのパスを動的に構築し、設定を読み込む関数
 def load_paths_by_model(model_name):
-    base_dir = r"C:\Users\user\Desktop\git\ai_code\system\model_configs"
+    base_dir = r"C:\Users\user\Desktop\git\ai_code\system\models"
     file_name = "config.txt"
     
     file_path = os.path.join(base_dir, model_name, file_name)
@@ -51,30 +56,18 @@ def load_paths_by_model(model_name):
     
     return paths
 
-# モデル名を指定して設定ファイルのパスを読み込み
-model_name = 'sirone'  # 'sirone' など別のモデル名も指定可能
 paths = load_paths_by_model(model_name)
-
-# ファイルパスの定義
-text_file_path = r"C:\Users\user\Desktop\git\ai_code\llm\outputs\ドスケベ長乳シスターさんがチンカス汚ちんぽに媚び媚びご奉仕してくれるお話♪_241007165422.txt"
 file_name = os.path.splitext(os.path.basename(text_file_path))[0]
 csv_file_path = paths['csv']['csv_file_path']
 
 # テキストを句読点で分割する関数
 def split_sentences(text):
-    sentences = re.split(r'(?<=[。！？♥♡])', text)
+    sentences = re.split(r'(?<=[。！？♥♪♡])|\s+', text)
     return [s.strip() for s in sentences if s.strip()]
 
-# ファイルから内容部分だけを取得する関数
 def extract_content(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
-        lines = file.readlines()
-        content = ""
-        for line in lines:
-            if line.startswith('内容:'):
-                content = line.replace('内容:', '').strip()
-                break
-        return content
+        return file.read().strip()
 
 # CSVファイルからtranscriptとfilename列を読み込む関数
 def load_csv_transcripts(csv_file):
@@ -82,40 +75,29 @@ def load_csv_transcripts(csv_file):
     return df[['FilePath', 'Text', 'single_label']].astype(str).values.tolist()
 
 # 類似度を計算し最も似ているテキストとその音声ファイルパスを取得する関数
-def get_most_similar_text(sentence, transcripts, label, min_length_tolerance, max_length_tolerance):
+def get_most_similar_text(sentence, transcripts, label, length_weight=0.2):
     filtered_transcripts = [t for t in transcripts if t[2] == label]
-    if not filtered_transcripts:
-        print(f"ラベル {label} に対応するトランスクリプトが見つかりません")
-        return None, None
 
     texts = [t[1] for t in filtered_transcripts]  # transcript部分のみ抽出
     vectorizer = TfidfVectorizer()
-    
-    while True:
-        tfidf_matrix = vectorizer.fit_transform(texts + [sentence])
-        query_vector = tfidf_matrix[-1]  # 入力文のベクトル
-        cosine_similarities = cosine_similarity(query_vector, tfidf_matrix[:-1]).flatten()
+    tfidf_matrix = vectorizer.fit_transform(texts + [sentence])
+    query_vector = tfidf_matrix[-1]  # 入力文のベクトル
+    cosine_similarities = cosine_similarity(query_vector, tfidf_matrix[:-1]).flatten()
 
-        sentence_length = len(sentence)
-        min_length = max(0, sentence_length - min_length_tolerance)
-        max_length = sentence_length + max_length_tolerance
+    # 長さの類似度を計算
+    sentence_length = len(sentence)
+    length_similarities = np.array([1 - abs(len(text) - sentence_length) / max(sentence_length, len(text)) for text in texts])
 
-        valid_indices = [i for i, text in enumerate(texts) 
-                         if min_length <= len(text) <= max_length]
+    # 総合スコアの計算
+    total_scores = (1 - length_weight) * cosine_similarities + length_weight * length_similarities
 
-        if valid_indices:
-            valid_similarities = cosine_similarities[valid_indices]
-            most_similar_index = valid_indices[valid_similarities.argmax()]
-            
-            most_similar_text = filtered_transcripts[most_similar_index][1]
-            most_similar_filename = filtered_transcripts[most_similar_index][0]
-            
-            return most_similar_text, most_similar_filename
-        
-        min_length_tolerance += 1
-        if min_length_tolerance < 0:
-            print("適切な一致が見つかりません")
-            return None, None
+    # 最も高いスコアを持つインデックスを取得
+    most_similar_index = total_scores.argmax()
+
+    most_similar_text = filtered_transcripts[most_similar_index][1]
+    most_similar_filename = filtered_transcripts[most_similar_index][0]
+
+    return most_similar_text, most_similar_filename
 
 # テキストからカテゴリと本文を取得
 def extract_category_and_text(text):
@@ -151,7 +133,7 @@ csv_transcripts = load_csv_transcripts(csv_file_path)
 
 for category, sentence in category_text_pairs:
     # 類似度の高いテキストと音声ファイルパスを取得
-    similar_text, similar_audio_path = get_most_similar_text(sentence, csv_transcripts, category, min_length_tolerance=0, max_length_tolerance=5)
+    similar_text, similar_audio_path = get_most_similar_text(sentence, csv_transcripts, category)
     
     if similar_text is None or similar_audio_path is None:
         print(f"文 '{sentence}' に対する適切な類似テキストが見つかりませんでした。")

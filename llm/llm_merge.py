@@ -4,9 +4,9 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import PeftModel
 
 # 定数の定義
-CHECKPOINT_DIR = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr\checkpoint-12012"
-SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr\merged_model"
-MODEL_NAME = "akineAItech/kagemusya-7B-v1.5"
+CHECKPOINT_DIR = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v2\checkpoint-539"
+SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v2\merged_model_checkpoint-539"
+MODEL_NAME = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr\merged_model_checkpoint-30030"
 
 # GPU設定
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -25,7 +25,7 @@ model = AutoModelForCausalLM.from_pretrained(
     MODEL_NAME,
     use_auth_token=True,
     #device_map="auto",
-    quantization_config=quantization_config, #量子化する場合
+    #quantization_config=quantization_config, #量子化する場合
 )
 
 # モデルとトークナイザーの準備

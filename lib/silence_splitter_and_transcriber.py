@@ -3,10 +3,10 @@ import pandas as pd
 
 # モデル名の変数を追加
 MODEL_NAME = "slicer_opt"
-OUTPUT_DIR_BASE = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\outputs"
+OUTPUT_DIR_BASE = r"C:\Users\user\Desktop\git\ai_code\system\models\yumemi"
 
 # CSVファイルのパス
-CSV_PATH = r"C:\Users\user\Desktop\git\ai_code\GPTSoVITS\models\sirone\data\chupa_files.csv"  # ここにCSVファイルのパスを設定
+CSV_PATH = r"C:\Users\user\Desktop\git\ai_code\system\models\yumemi\chupa_folder\chupa_files.csv"
 
 def save_transcription_esd_list(csv_data, output_path):
     with open(output_path, "w", encoding="utf-8") as f:

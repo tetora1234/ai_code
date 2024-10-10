@@ -3,12 +3,11 @@ import shutil
 import pandas as pd
 
 # CSVファイルのパス
-csv_file = r"D:\Galgame_Dataset\out.csv"
-
+csv_file = r"C:\Users\user\Desktop\git\ai_code\system\models\yumemi\filter_Speaker.csv"
 # フォルダのパス
-normal_folder = r"D:\normal_folder"
-chupa_folder = r"D:\chupa_folder"
-aegi_folder = r"D:\aegi_folder"
+normal_folder = r"C:\Users\user\Desktop\git\ai_code\system\models\yumemi\normal_folder"
+chupa_folder = r"C:\Users\user\Desktop\git\ai_code\system\models\yumemi\chupa_folder"
+aegi_folder = r"C:\Users\user\Desktop\git\ai_code\system\models\yumemi\aegi_folder"
 
 # フォルダが存在しない場合は作成
 os.makedirs(normal_folder, exist_ok=True)

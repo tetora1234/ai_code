@@ -1,13 +1,16 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
 import os
 import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
 from datetime import datetime
+import json
+import random
 
 # RTX8000を使用するように環境変数を設定
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 print(f"CUDA Device Name: {torch.cuda.get_device_name(0)}")
 
-model_directory = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr\merged_model_checkpoint-12012"
+model_directory = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v2\merged_model_checkpoint-539"
+json_file_path = r"C:\Users\user\Desktop\git\ai_code\llm\dataset\data.json"
 
 tokenizer = AutoTokenizer.from_pretrained(model_directory)
 model = AutoModelForCausalLM.from_pretrained(
@@ -15,19 +18,38 @@ model = AutoModelForCausalLM.from_pretrained(
     device_map="auto"
 )
 
+# filtered_data.jsonからタイトルをランダムに取得
+def get_random_title_from_json(json_file):
+    with open(json_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    
+    # JSONファイルがリスト形式で、各項目にタイトルが含まれていると仮定
+    titles = [item["タイトル"] for item in data if "タイトル" in item]
+    
+    # ランダムにタイトルを選択
+    random_title = random.choice(titles)
+    return random_title
+
+# 初期プロンプトを更新
+def create_initial_prompt():
+    random_title = get_random_title_from_json(json_file_path)
+    
+    # タイトルを使用してプロンプトを作成
+    initial_prompt = f"タイトル: {random_title} 内容: "
+    return initial_prompt
+
 def generate_text(prompt):
     inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
     
     # TextStreamerのインスタンスを作成（標準出力にテキストをリアルタイム表示）
     streamer = TextStreamer(tokenizer, skip_prompt=True)
-    
     outputs = model.generate(
         input_ids=inputs["input_ids"],
         attention_mask=inputs["attention_mask"],
         max_new_tokens=10000,
         do_sample=True,
         top_k=5,
-        temperature=0.7,
+        temperature=0.8,
         repetition_penalty=1.1,
         use_cache=True,
         pad_token_id=tokenizer.pad_token_id,
@@ -38,11 +60,13 @@ def generate_text(prompt):
     new_tokens = outputs[0][inputs["input_ids"].size(1):]
     
     # skip_special_tokens=Falseにして</s>の確認を行う
-    generated_text = tokenizer.decode(new_tokens, skip_special_tokens=False)
+    generated_text = tokenizer.decode(new_tokens, skip_special_tokens=True)
     return generated_text
 
 def save_generated_text(generated_text, prompt):
     current_time = datetime.now().strftime("%y%m%d%H%M%S")
+
+    prompt = prompt.replace("内容: ", "")
     # 「タイトル: 」の部分を探して、その後の文字列を抜き出す
     title_prefix = "タイトル: "
     start_index = prompt.find(title_prefix) + len(title_prefix)
@@ -57,33 +81,10 @@ def save_generated_text(generated_text, prompt):
     file_path = os.path.join(output_directory, filename)
 
     with open(file_path, "w", encoding="utf-8") as f:
-        f.write(f"{prompt}{generated_text}")
-
-def generate_full_text(prompt, initial_prompt):
-    while True:
-        generated_text = generate_text(prompt)
-        
-        # 生成されたテキストに�が含まれているか確認
-        if "�" in generated_text:
-            print("�が含まれています。再試行します。")
-            continue  # 再試行する
-        else:
-            break  # �が含まれていない場合はループを抜ける
-    
-    # EOSトークンとして"</s>"が含まれているかを確認
-    if "</s>" in generated_text:
-        save_generated_text(generated_text, prompt)
-        print("EOSトークンが見つかりました。初期プロンプトで再スタートします。")
-        prompt = initial_prompt  # プロンプトを初期プロンプトにリセット
-    else:
-        prompt += generated_text  # プロンプトを更新
-    
-    return prompt
-
-# 使用例
-initial_prompt = """タイトル: ドスケベ長乳シスターさんがチンカス汚ちんぽに媚び媚びご奉仕してくれるお話♪\n内容: """
-
-generated_text = initial_prompt
+        f.write(f"{generated_text}")
 
 while True:
-    generated_text = generate_full_text(generated_text, initial_prompt)
+    initial_prompt = create_initial_prompt()
+    print(initial_prompt)
+    generated_text = generate_text(initial_prompt)
+    save_generated_text(generated_text, initial_prompt)

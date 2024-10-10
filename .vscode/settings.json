@@ -1,6 +1,7 @@
 {
     "git.ignoreLimitWarning": true,
     "python.analysis.extraPaths": [
-        "./GPTSoVITS"
+        "./GPTSoVITS",
+        "./GPTSoVITS/tools/my_"
     ]
 }
