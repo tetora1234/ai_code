@@ -9,7 +9,7 @@ import random
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 print(f"CUDA Device Name: {torch.cuda.get_device_name(0)}")
 
-model_directory = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v2\merged_model_checkpoint-539"
+model_directory = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr"
 json_file_path = r"C:\Users\user\Desktop\git\ai_code\llm\dataset\data.json"
 
 tokenizer = AutoTokenizer.from_pretrained(model_directory)

@@ -24,7 +24,7 @@ text_lengths = []  # 音声に対応するテキストの長さを保存
 
 # モデル名を指定して設定ファイルのパスを読み込み
 model_name = 'yumemi'
-text_file_path = r"C:\Users\user\Desktop\git\ai_code\llm\outputs\アオハル系お姫様と発情アプリで我慢できないオホ声えっち_241009042824.txt"
+text_file_path = r"C:\Users\user\Desktop\git\ai_code\system\【耳イキパラダイス】銀髪ウィスパー留学生ＪＫのヘンタイ耳フェラ誘惑ご奉仕♪　～密着連続イキからの孕ませ中出し～_241009123638.txt"
 
 # モデル名に基づいて設定ファイルのパスを動的に構築し、設定を読み込む関数
 def load_paths_by_model(model_name):
@@ -75,7 +75,7 @@ def load_csv_transcripts(csv_file):
     return df[['FilePath', 'Text', 'single_label']].astype(str).values.tolist()
 
 # 類似度を計算し最も似ているテキストとその音声ファイルパスを取得する関数
-def get_most_similar_text(sentence, transcripts, label, length_weight=0.2):
+def get_most_similar_text(sentence, transcripts, label, length_weight=0.6):
     filtered_transcripts = [t for t in transcripts if t[2] == label]
 
     texts = [t[1] for t in filtered_transcripts]  # transcript部分のみ抽出
@@ -134,10 +134,6 @@ csv_transcripts = load_csv_transcripts(csv_file_path)
 for category, sentence in category_text_pairs:
     # 類似度の高いテキストと音声ファイルパスを取得
     similar_text, similar_audio_path = get_most_similar_text(sentence, csv_transcripts, category)
-    
-    if similar_text is None or similar_audio_path is None:
-        print(f"文 '{sentence}' に対する適切な類似テキストが見つかりませんでした。")
-        continue
 
     # フォルダを含むパス
     output_audio_path = fr"C:\Users\user\Desktop\git\ai_code\system\outputs\{file_name}\audio_{counter}.wav"

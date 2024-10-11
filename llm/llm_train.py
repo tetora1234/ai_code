@@ -17,9 +17,9 @@ from transformers.trainer_callback import TrainerCallback
 # 定数の定義
 HF_TOKEN = "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"
 DATA_FILE_PATH = r"C:\Users\user\Desktop\git\ai_code\llm\dataset\filtered_data.json"
-MODEL_NAME = "CohereForAI/c4ai-command-r-08-2024"
-LOGGING_DIR = r"C:\Users\user\Desktop\git\ai_code\llm\models\c4ai-command-r-08-2024\logs"
-SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\llm\models\c4ai-command-r-08-2024"
+MODEL_NAME = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr"
+LOGGING_DIR = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v2\logs"
+SAVE_DIRECTORY = r"C:\Users\user\Desktop\git\ai_code\llm\models\kagemusya-7B-v1.5_asmr_v2"
 
 # Hugging Faceにログイン
 login(token=HF_TOKEN)
@@ -46,14 +46,14 @@ def preprocess_text(examples):
 # トークン化関数
 def tokenize_function(example):
     text = example['学習用']
-    tokenized = tokenizer(text, padding=True, truncation=True, max_length=5000, return_tensors="pt")
+    tokenized = tokenizer(text, padding=True, truncation=True, max_length=7000, return_tensors="pt")
     
     # トークンIDの確認
     #print(tokenized["input_ids"][0])
     
     # トークンIDを平文に復元
     decoded_text = tokenizer.decode(tokenized["input_ids"][0], skip_special_tokens=False)
-    print("復元されたテキスト:", decoded_text)
+    #print("復元されたテキスト:", decoded_text)
     
     return {
         "input_ids": tokenized["input_ids"][0],
@@ -129,8 +129,8 @@ def main():
     # LoRAの設定
     lora_config = LoraConfig(
         task_type=TaskType.CAUSAL_LM,  # 因果言語モデルタスク
-        r=512,  # ランク
-        lora_alpha=512,  # LoRAのスケーリング係数
+        r=128,  # ランク
+        lora_alpha=128,  # LoRAのスケーリング係数
         lora_dropout=0.1,  # ドロップアウト率
         bias="none",  # バイアスの取り扱い
         target_modules=["q_proj", "v_proj"]  # 適用対象のモジュールを指定
@@ -158,7 +158,7 @@ def main():
         logging_steps=1,
         save_strategy="epoch",
         fp16=True,
-        optim="adamw_torch",
+        optim="adamw_bnb_8bit",
         lr_scheduler_type="constant",
     )
 
